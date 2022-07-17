@@ -2,6 +2,7 @@ import copy
 import os
 import sys
 from pathlib import Path
+from random import randint
 
 import pygame
 
@@ -106,36 +107,61 @@ def get_visible_area_limits(
 
 
 def main():
+    # Init
     pygame.init()
     os.environ["SDL_VIDEO_CENTERED"] = "1"
     pygame.display.set_caption("DND fog")
     true_fps.display_caption = "DND fog"
     clock = pygame.time.Clock()
     frame_rate: int = 60
-    root_dir = Path(__file__).parent.parent
 
-    gridsize = orig_gridsize = 165
-    removed: set[tuple[int, int]] = set()
-    camera = (0, 0)
+    colors = [
+        (255, 0, 0),  # red
+        (255, 255, 0),  # yellow
+        (0, 0, 255),  # blue
+        (0, 100, 0),  # green
+        (0, 255, 255),  # cyan
+        (255, 0, 255),  # magenta
+        (255, 100, 0),  # orange
+        (100, 0, 100),  # purple
+        (0, 255, 0),  # light green
+        (110, 38, 14),  # brown
+        (255, 192, 203),  # pink
+        (109, 113, 46),  # olive
+        (220, 180, 255),  # lavender
+        (253, 133, 105),  # peach
+    ]
+    orig_colors = colors.copy()
 
-    show_grid = True
-
-    flags = pygame.SRCALPHA | pygame.RESIZABLE  # | pygame.NOFRAME
-
+    # Screen setup
     display_size = (800, 800)
+    flags = pygame.SRCALPHA | pygame.RESIZABLE  # | pygame.NOFRAME
     display = pygame.display.set_mode(display_size, flags=flags)
 
+    # Map setup
+    root_dir = Path(__file__).parent.parent
     dnd_map = pygame.image.load(root_dir / "test-map.png").convert_alpha()
     dnd_map.set_colorkey((255, 255, 255))
     dnd_map_size = dnd_map.get_size()
     orig_dnd_map = dnd_map.copy()
-
     map_offset = (0, 0)
+
+    # Settings
+    gridsize = orig_gridsize = 165
     fog_color = (0xCC, 0xCC, 0xCC)
+    removed_fog: set[tuple[int, int]] = set()
+    pieces: dict[tuple[int, int], tuple[int, int, int]] = {}
+    moving: tuple[tuple[int, int], tuple[int, int, int]] | None = None
+    camera = (0, 0)
+    double_click = 0
+    show_grid = True
+    show_fog = True
 
     while True:
+        double_click = double_click - 1 if double_click > 0 else 0
+
         mouse_pos = pygame.mouse.get_pos()
-        pressed_keys = pygame.key.get_pressed()
+        # pressed_keys = pygame.key.get_pressed()
         pressed_modifiers = pygame.key.get_mods()
         pressed_buttons = pygame.mouse.get_pressed()
         mouse_speed = pygame.mouse.get_rel()
@@ -147,11 +173,13 @@ def main():
                 pygame.quit()
                 sys.exit()
 
-            # Keyboard events
             if event.type == pygame.KEYDOWN:
                 # Hide/Show grid
                 if event.key == pygame.K_g:
                     show_grid = not show_grid
+                # Hide/Show fog
+                if event.key == pygame.K_1:
+                    show_fog = not show_fog
 
             # Zoom
             if event.type == pygame.MOUSEWHEEL:
@@ -163,36 +191,75 @@ def main():
 
                     scale = gridsize / orig_gridsize
 
-                    if not (pressed_modifiers & pygame.KMOD_CTRL):
+                    # If ATL pressed, only change the grid size
+                    if not (pressed_modifiers & pygame.KMOD_ALT):
                         dnd_map = pygame.transform.scale(
                             orig_dnd_map, (dnd_map_size[0] * scale, dnd_map_size[1] * scale)
                         )
 
-            # Add and remove fog
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                # Start moving a piece
+                if event.button == pygame.BUTTON_LEFT:
+                    pos = grid_position((mouse_pos[0], mouse_pos[1]), camera, gridsize)
+                    if pos in pieces:
+                        moving = pos, pieces[pos]
+
+                if event.button == pygame.BUTTON_RIGHT:
+                    pos = grid_position((mouse_pos[0], mouse_pos[1]), camera, gridsize)
+
+                    # Remove piece
+                    if double_click:
+                        color = pieces.pop(pos, None)
+                        if color in orig_colors:
+                            colors.insert(0, color)
+
+                    # Add a piece
+                    else:
+                        if pos not in pieces:
+                            # Predefined color
+                            if len(colors) > 0:
+                                pieces[pos] = colors.pop(0)
+
+                            # Random color
+                            else:
+                                pieces[pos] = (randint(0, 255), randint(0, 255), randint(0, 255))
+
+                        double_click = 15
+
+            if event.type == pygame.MOUSEBUTTONUP:
+                # Stop moving a piece
+                if event.button == pygame.BUTTON_LEFT:
+                    moving = None
+
+            # Left mouse button
             if pressed_buttons[0]:
-                pos = grid_position((mouse_pos[0], mouse_pos[1]), camera, gridsize)
-                mod = 0.2
-                poss = [
-                    pos,
-                    grid_position((mouse_pos[0] + (gridsize * mod), mouse_pos[1]), camera, gridsize),
-                    grid_position((mouse_pos[0], mouse_pos[1] + (gridsize * mod)), camera, gridsize),
-                    grid_position((mouse_pos[0] - (gridsize * mod), mouse_pos[1]), camera, gridsize),
-                    grid_position((mouse_pos[0], mouse_pos[1] - (gridsize * mod)), camera, gridsize),
-                ]
 
-                if pressed_modifiers & pygame.KMOD_CTRL:
-                    removed.discard(pos)
+                # Moving a piece
+                if moving is not None:
+                    pos = grid_position((mouse_pos[0], mouse_pos[1]), camera, gridsize)
+                    if pos != moving[0] and pos not in pieces:
+                        pieces.pop(moving[0], None)
+                        pieces[pos] = moving[1]
+                        moving = pos, moving[1]
+
                 else:
-                    for p in poss:
-                        removed.add(p)
+                    # Move map
+                    if pressed_modifiers & pygame.KMOD_ALT:
+                        map_offset = map_offset[0] - mouse_speed[0], map_offset[1] - mouse_speed[1]
 
-            # Move camera
+                    # Add and remove fog
+                    if pressed_modifiers & pygame.KMOD_CTRL:
+                        pos = grid_position((mouse_pos[0], mouse_pos[1]), camera, gridsize)
+
+                        if pressed_modifiers & pygame.KMOD_SHIFT:
+                            removed_fog.discard(pos)
+                        else:
+                            removed_fog.add(pos)
+
+            # Middle mouse button
             if pressed_buttons[1]:
+                # Move camera
                 camera = camera[0] - mouse_speed[0], camera[1] - mouse_speed[1]
-
-            # Move map
-            if pressed_buttons[2]:
-                map_offset = map_offset[0] - mouse_speed[0], map_offset[1] - mouse_speed[1]
 
         display.fill(fog_color)
 
@@ -201,7 +268,16 @@ def main():
         if show_grid:
             draw_grid(display, camera, gridsize)
 
-        draw_fog(display, camera, gridsize, removed)
+        for (x, y), color in pieces.items():
+            pygame.draw.circle(
+                display,
+                color,
+                draw_position((x + 0.5, y + 0.5), camera, gridsize),
+                (7 * gridsize) // 16,
+            )
+
+        if show_fog:
+            draw_fog(display, camera, gridsize, removed_fog)
 
         pygame.display.flip()
 
