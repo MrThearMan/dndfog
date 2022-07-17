@@ -1,4 +1,6 @@
+import base64
 import copy
+import json
 import os
 import sys
 from argparse import ArgumentParser
@@ -7,6 +9,115 @@ from pathlib import Path
 from random import randint
 
 import pygame
+import pywintypes
+from win32con import OFN_ALLOWMULTISELECT, OFN_EXPLORER
+from win32gui import GetOpenFileNameW, GetSaveFileNameW
+
+
+def open_file_dialog(
+    title: str = None,
+    directory: str = os.getcwd(),
+    default_name: str = "",
+    default_ext: str = "",
+    ext: list[tuple[str, str]] = None,
+    multiselect: bool = False,
+) -> str | list[str] | None:
+    """Open a file open dialog at a specified directory.
+    :param title: Dialog title.
+    :param directory: Directory to open file dialog in.
+    :param default_name: Default file name.
+    :param default_ext: Default file extension. Only letters, no dot.
+    :param ext: List of available extension description + name tuples,
+                e.g. [(JPEG Image, jpg), (PNG Image, png)].
+    :param multiselect: Allow multiple files to be selected.
+    :return: Path to a file to open if multiselect=False.
+             List of the paths to files which should be opened if multiselect=True.
+             None if file open dialog canceled.
+    :raises IOError: File open dialog failed.
+    """
+
+    # https://programtalk.com/python-examples/win32gui.GetOpenFileNameW/
+
+    flags = OFN_EXPLORER
+    if multiselect:
+        flags = flags | OFN_ALLOWMULTISELECT
+
+    if ext is None:
+        ext = "All Files\0*.*\0"
+    else:
+        ext = "".join([f"{name}\0*.{extension}\0" for name, extension in ext])
+
+    try:
+        file_path, _, _ = GetOpenFileNameW(
+            InitialDir=directory,
+            File=default_name,
+            Flags=flags,
+            Title=title,
+            MaxFile=2**16,
+            Filter=ext,
+            DefExt=default_ext,
+        )
+
+        paths = file_path.split("\0")
+
+        if len(paths) == 1:
+            return paths[0]
+        else:
+            for i in range(1, len(paths)):
+                paths[i] = os.path.join(paths[0], paths[i])
+            paths.pop(0)
+
+        return paths
+
+    except pywintypes.error as e:  # noqa
+        if e.winerror == 0:
+            return
+        else:
+            raise IOError()
+
+
+def save_file_dialog(
+    title: str = None,
+    directory: str = os.getcwd(),
+    default_name: str = "",
+    default_ext: str = "",
+    ext: list[tuple[str, str]] = None,
+) -> str | None:
+    """Open a file save dialog at a specified directory.
+    :param title: Dialog title.
+    :param directory: Directory to open file dialog in.
+    :param default_name: Default file name.
+    :param default_ext: Default file extension. Only letters, no dot.
+    :param ext: List of available extension description + name tuples,
+                e.g. [(JPEG Image, jpg), (PNG Image, png)].
+    :return: Path file should be save to. None if file save dialog canceled.
+    :raises IOError: File save dialog failed.
+    """
+
+    # https://programtalk.com/python-examples/win32gui.GetSaveFileNameW/
+
+    if ext is None:
+        ext = "All Files\0*.*\0"
+    else:
+        ext = "".join([f"{name}\0*.{extension}\0" for name, extension in ext])
+
+    try:
+        file_path, _, _ = GetSaveFileNameW(
+            InitialDir=directory,
+            File=default_name,
+            Title=title,
+            MaxFile=2**16,
+            Filter=ext,
+            DefExt=default_ext,
+        )
+
+        return file_path
+
+    except pywintypes.error as e:
+        if e.winerror == 0:
+            return
+        else:
+            raise IOError()
 
 
 class Glow:
@@ -233,6 +344,57 @@ def main(map_file: str):
                 sys.exit()
 
             if event.type == pygame.KEYDOWN:
+
+                # Save
+                if pressed_modifiers & pygame.KMOD_CTRL and event.key == pygame.K_s:
+                    savepath = save_file_dialog(
+                        title="Save Map",
+                        ext=[("Json file", "json")],
+                        default_ext="json",
+                    )
+                    if savepath:
+                        data = {
+                            "gridsize": gridsize,
+                            "removed_fog": list(removed_fog),
+                            "background": {
+                                "img": base64.b64encode(pygame.image.tostring(orig_dnd_map, "RGBA")).decode(),
+                                "size": list(orig_dnd_map.get_size()),
+                                "mode": "RGBA",
+                                "zoom": list(dnd_map.get_size()),
+                            },
+                            "pieces": [[key, value] for key, value in pieces.items()],
+                            "camera": camera,
+                            "map_offset": map_offset,
+                        }
+
+                        with open(savepath, "w") as f:
+                            json.dump(data, f, indent=2)
+
+                # Load
+                if pressed_modifiers & pygame.KMOD_CTRL and event.key == pygame.K_o:
+                    openpath = open_file_dialog(
+                        title="Open Map",
+                        ext=[("Json file", "json")],
+                        default_ext="json",
+                    )
+                    if openpath:
+                        with open(openpath, "r") as f:
+                            data = json.load(f)
+
+                        gridsize = int(data["gridsize"])
+                        removed_fog = set((x, y) for x, y in data["removed_fog"])
+                        pieces = {tuple(value[0]): tuple(value[1]) for value in data["pieces"]}
+                        orig_dnd_map = pygame.image.fromstring(
+                            base64.b64decode(data["background"]["img"]),
+                            data["background"]["size"],
+                            data["background"]["mode"],
+                        ).convert_alpha()
+                        dnd_map = pygame.transform.scale(orig_dnd_map, data["background"]["zoom"])
+                        camera = tuple(data["camera"])
+                        map_offset = tuple(data["map_offset"])
+
+                        colors = [c for c in orig_colors if c not in pieces.values()]
+
                 # Hide/Show grid
                 if event.key == pygame.K_g:
                     show_grid = not show_grid
@@ -343,11 +505,11 @@ def main(map_file: str):
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser()
-    root_dir = Path(__file__).parent.parent
+    background_map = open_file_dialog(
+        title="Select background map",
+        ext=[("PNG file", "png"), ("JPG file", "jpg")],
+    )
+    if not background_map:
+        raise SystemExit("No background file selected.")
 
-    parser.add_argument("--file", default=str(root_dir / "test-map.png"))
-
-    args = parser.parse_args()
-
-    main(args.file)
+    main(background_map)

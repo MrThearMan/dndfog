@@ -40,6 +40,7 @@ exclude = [
 [tool.poetry.dependencies]
 python = "^3.10"
 pygame = "2.1.2"
+pywin32 = "304"
 
 [tool.poetry.dev-dependencies]
 pytest = "7.1.2"
