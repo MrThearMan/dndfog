@@ -294,7 +294,7 @@ def get_visible_area_limits(
     return start_x, start_y, end_x, end_y
 
 
-def main(map_file: str):
+def main(map_file: str, gridsize: int):
     # Init
     pygame.init()
     os.environ["SDL_VIDEO_CENTERED"] = "1"
@@ -310,7 +310,7 @@ def main(map_file: str):
 
     # Settings
     colors = orig_colors.copy()
-    gridsize = orig_gridsize = 165
+    orig_gridsize = gridsize
     fog_color = (0xCC, 0xCC, 0xCC)
     removed_fog: set[tuple[int, int]] = set()
     pieces: dict[tuple[int, int], tuple[int, int, int]] = {}
@@ -322,7 +322,17 @@ def main(map_file: str):
 
     # Load data
     if map_file[-5:] == ".json":
-        camera, colors, dnd_map, gridsize, map_offset, orig_dnd_map, pieces, removed_fog = open_data_file(map_file)
+        (
+            camera,
+            colors,
+            dnd_map,
+            orig_gridsize,
+            gridsize,
+            map_offset,
+            orig_dnd_map,
+            pieces,
+            removed_fog,
+        ) = open_data_file(map_file)
 
     # Load background image
     else:
@@ -351,7 +361,16 @@ def main(map_file: str):
 
                 # Save data
                 if pressed_modifiers & pygame.KMOD_CTRL and event.key == pygame.K_s:
-                    save_data_file(camera, dnd_map, gridsize, map_offset, orig_dnd_map, pieces, removed_fog)
+                    save_data_file(
+                        camera,
+                        dnd_map,
+                        orig_gridsize,
+                        gridsize,
+                        map_offset,
+                        orig_dnd_map,
+                        pieces,
+                        removed_fog,
+                    )
 
                 # Load data
                 if pressed_modifiers & pygame.KMOD_CTRL and event.key == pygame.K_o:
@@ -365,6 +384,7 @@ def main(map_file: str):
                             camera,
                             colors,
                             dnd_map,
+                            orig_gridsize,
                             gridsize,
                             map_offset,
                             orig_dnd_map,
@@ -386,15 +406,9 @@ def main(map_file: str):
                     gridsize = gridsize + event.y
                     camera_delta = zoom_at_mouse_pos(mouse_pos, camera, old_gridsize, gridsize)
                     camera = camera[0] - camera_delta[0], camera[1] - camera_delta[1]
-
                     scale = gridsize / orig_gridsize
-
-                    # If ATL pressed, only change the grid size
-                    if not (pressed_modifiers & pygame.KMOD_ALT):
-                        dnd_map_size = orig_dnd_map.get_size()
-                        dnd_map = pygame.transform.scale(
-                            orig_dnd_map, (dnd_map_size[0] * scale, dnd_map_size[1] * scale)
-                        )
+                    dnd_map_size = orig_dnd_map.get_size()
+                    dnd_map = pygame.transform.scale(orig_dnd_map, (dnd_map_size[0] * scale, dnd_map_size[1] * scale))
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # Start moving a piece
@@ -482,7 +496,7 @@ def main(map_file: str):
         clock.tick(frame_rate)
 
 
-def save_data_file(camera, dnd_map, gridsize, map_offset, orig_dnd_map, pieces, removed_fog):
+def save_data_file(camera, dnd_map, orig_gridsize, gridsize, map_offset, orig_dnd_map, pieces, removed_fog):
     savepath = save_file_dialog(
         title="Save Map",
         ext=[("Json file", "json")],
@@ -491,6 +505,7 @@ def save_data_file(camera, dnd_map, gridsize, map_offset, orig_dnd_map, pieces, 
     if savepath:
         data = {
             "gridsize": gridsize,
+            "orig_gridsize": orig_gridsize,
             "removed_fog": list(removed_fog),
             "background": {
                 "img": serialize_map(orig_dnd_map),
@@ -512,6 +527,7 @@ def open_data_file(openpath: str):
         data = json.load(f)
 
     gridsize = int(data["gridsize"])
+    orig_gridsize = int(data["orig_gridsize"])
     removed_fog = set((x, y) for x, y in data["removed_fog"])
     pieces = {tuple(value[0]): tuple(value[1]) for value in data["pieces"]}
     orig_dnd_map = deserialize_map(data)
@@ -520,7 +536,7 @@ def open_data_file(openpath: str):
     map_offset = tuple(data["map_offset"])
     colors = [c for c in orig_colors if c not in pieces.values()]
 
-    return camera, colors, dnd_map, gridsize, map_offset, orig_dnd_map, pieces, removed_fog
+    return camera, colors, dnd_map, orig_gridsize, gridsize, map_offset, orig_dnd_map, pieces, removed_fog
 
 
 def serialize_map(surface: pygame.Surface) -> str:
@@ -538,6 +554,7 @@ def deserialize_map(data: dict) -> pygame.Surface:
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--file", default=None)
+    parser.add_argument("--gridsize", default=36)
     args = parser.parse_args()
 
     if args.file is not None:
@@ -551,4 +568,4 @@ if __name__ == "__main__":
     if not start_file:
         raise SystemExit("No file selected.")
 
-    main(start_file)
+    main(start_file, args.gridsize)
