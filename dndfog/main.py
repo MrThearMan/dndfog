@@ -17,8 +17,9 @@ def draw_position(
     pos: tuple[int | float, int | float],
     camera: tuple[int, int],
     gridsize: int,
+    offset: tuple[int, int] = (0, 0),
 ) -> tuple[int, int]:
-    return (pos[0] * gridsize) - camera[0], (pos[1] * gridsize) - camera[1]
+    return (pos[0] * gridsize) - camera[0] - offset[0], (pos[1] * gridsize) - camera[1] - offset[1]
 
 
 def grid_position(pos: tuple[int, int], camera: tuple[int, int], gridsize: int) -> tuple[int, int]:
@@ -88,14 +89,7 @@ def draw_fog(
         for y in range(start_y, end_y, 1):
             if (x, y) in removed:
                 continue
-
             display.blit(next(glow), draw_position((x - 0.5, y - 0.5), camera, gridsize))
-            # pygame.draw.circle(
-            #     display,
-            #     color,
-            #     draw_position((x + 0.5, y + 0.5), camera, gridsize),
-            #     gridsize * 0.8,
-            # )
 
 
 def get_visible_area_limits(
@@ -119,14 +113,25 @@ def main():
     clock = pygame.time.Clock()
     frame_rate: int = 60
     root_dir = Path(__file__).parent.parent
-    gridsize = 40
 
+    gridsize = orig_gridsize = 165
     removed: set[tuple[int, int]] = set()
-
     camera = (0, 0)
 
+    show_grid = True
+
     flags = pygame.SRCALPHA | pygame.RESIZABLE  # | pygame.NOFRAME
-    display = pygame.display.set_mode((800, 800), flags=flags)
+
+    display_size = (800, 800)
+    display = pygame.display.set_mode(display_size, flags=flags)
+
+    dnd_map = pygame.image.load(root_dir / "test-map.png").convert_alpha()
+    dnd_map.set_colorkey((255, 255, 255))
+    dnd_map_size = dnd_map.get_size()
+    orig_dnd_map = dnd_map.copy()
+
+    map_offset = (0, 0)
+    fog_color = (0xCC, 0xCC, 0xCC)
 
     while True:
         mouse_pos = pygame.mouse.get_pos()
@@ -137,10 +142,18 @@ def main():
 
         for event in pygame.event.get():
 
+            # Quit
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 pygame.quit()
                 sys.exit()
 
+            # Keyboard events
+            if event.type == pygame.KEYDOWN:
+                # Hide/Show grid
+                if event.key == pygame.K_g:
+                    show_grid = not show_grid
+
+            # Zoom
             if event.type == pygame.MOUSEWHEEL:
                 old_gridsize = gridsize
                 if gridsize + event.y > 0:
@@ -148,27 +161,45 @@ def main():
                     camera_delta = zoom_at_mouse_pos(mouse_pos, camera, old_gridsize, gridsize)
                     camera = camera[0] - camera_delta[0], camera[1] - camera_delta[1]
 
+                    scale = gridsize / orig_gridsize
+
+                    if not (pressed_modifiers & pygame.KMOD_CTRL):
+                        dnd_map = pygame.transform.scale(
+                            orig_dnd_map, (dnd_map_size[0] * scale, dnd_map_size[1] * scale)
+                        )
+
+            # Add and remove fog
             if pressed_buttons[0]:
                 pos = grid_position((mouse_pos[0], mouse_pos[1]), camera, gridsize)
+                mod = 0.2
                 poss = [
                     pos,
-                    grid_position((mouse_pos[0] + (gridsize * 0.5), mouse_pos[1]), camera, gridsize),
-                    grid_position((mouse_pos[0], mouse_pos[1] + (gridsize * 0.5)), camera, gridsize),
-                    grid_position((mouse_pos[0] - (gridsize * 0.5), mouse_pos[1]), camera, gridsize),
-                    grid_position((mouse_pos[0], mouse_pos[1] - (gridsize * 0.5)), camera, gridsize),
+                    grid_position((mouse_pos[0] + (gridsize * mod), mouse_pos[1]), camera, gridsize),
+                    grid_position((mouse_pos[0], mouse_pos[1] + (gridsize * mod)), camera, gridsize),
+                    grid_position((mouse_pos[0] - (gridsize * mod), mouse_pos[1]), camera, gridsize),
+                    grid_position((mouse_pos[0], mouse_pos[1] - (gridsize * mod)), camera, gridsize),
                 ]
 
-                for p in poss:
-                    if pressed_modifiers & pygame.KMOD_CTRL:
-                        removed.discard(pos)
-                    else:
+                if pressed_modifiers & pygame.KMOD_CTRL:
+                    removed.discard(pos)
+                else:
+                    for p in poss:
                         removed.add(p)
 
+            # Move camera
             if pressed_buttons[1]:
                 camera = camera[0] - mouse_speed[0], camera[1] - mouse_speed[1]
 
-        display.fill((0xCC, 0xCC, 0xCC))
-        draw_grid(display, camera, gridsize)
+            # Move map
+            if pressed_buttons[2]:
+                map_offset = map_offset[0] - mouse_speed[0], map_offset[1] - mouse_speed[1]
+
+        display.fill(fog_color)
+
+        display.blit(dnd_map, draw_position((0, 0), camera, gridsize, offset=map_offset))
+
+        if show_grid:
+            draw_grid(display, camera, gridsize)
 
         draw_fog(display, camera, gridsize, removed)
 
