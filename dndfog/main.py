@@ -1,13 +1,75 @@
 import copy
 import os
 import sys
+from argparse import ArgumentParser
+from itertools import cycle
 from pathlib import Path
 from random import randint
 
 import pygame
 
 from dndfog.fps import true_fps
-from dndfog.glow import Glow
+
+
+class Glow:
+    def __init__(self, radius_range: range, inner_color: pygame.Color, outer_color: pygame.Color):
+        self._radius_range = radius_range
+        self._inner_color = inner_color
+        self._outer_color = outer_color
+        self._glow_cycle = cycle([self._build_glow(radius_range, inner_color, outer_color)])
+
+    @classmethod
+    def uniform(cls, radius: int, color) -> "Glow":
+        if not isinstance(color, pygame.Color):
+            color = pygame.Color(*color)
+
+        outer_color = copy.deepcopy(color)
+        outer_color.a = 0
+
+        return cls(range(radius, 0, -1), color, outer_color)
+
+    def __iter__(self) -> "Glow":
+        return self
+
+    def __next__(self) -> pygame.Surface:
+        return next(self._glow_cycle)
+
+    @staticmethod
+    def _build_glow(radius_range: range, inner_color: pygame.Color, outer_color: pygame.Color) -> pygame.Surface:
+        colors, radii = [], []
+
+        lerp_steps = range(1, len(radius_range) + 1)
+
+        # create colors for glow from the largest circle's color to the smallest
+        for lerp_step, radius_step in zip(lerp_steps, radius_range):
+            lerped_color = outer_color.lerp(inner_color, lerp_step / len(radius_range))
+
+            radii.append(radius_step)
+            colors.append(lerped_color)
+
+        glow_surface_size = 2 * radius_range.start, 2 * radius_range.start
+        glow_surface_center = radius_range.start, radius_range.start
+        # Glow circles are not solid so that blend mode works right and each band has 1 pixel overlap
+        band_width = abs(radius_range.step) + 1
+
+        glow = pygame.Surface(glow_surface_size, flags=pygame.SRCALPHA)
+
+        # Draw glow in shrinking circles. Draw a circle first to a temp surface
+        # and then blit that to the glow surface with it's alpha value in RGBA-MAX blend mode.
+        for i, (circle_color, circle_radius) in enumerate(zip(colors, radii)):
+            temp_surface = pygame.Surface(glow_surface_size, flags=pygame.SRCALPHA)
+            pygame.draw.circle(
+                temp_surface,
+                circle_color,
+                glow_surface_center,
+                circle_radius,
+                band_width if i != len(colors) - 1 else 0,
+            )
+            temp_surface.set_alpha(circle_color.a)
+
+            glow.blit(temp_surface, (0, 0), special_flags=pygame.BLEND_RGBA_MAX)
+
+        return glow
 
 
 def approx(value: int | float, /) -> int:
@@ -114,6 +176,7 @@ def main():
     true_fps.display_caption = "DND fog"
     clock = pygame.time.Clock()
     frame_rate: int = 60
+    modifiers = {pygame.KMOD_ALT, pygame.KMOD_CTRL, pygame.KMOD_SHIFT}
 
     colors = [
         (255, 0, 0),  # red
@@ -199,7 +262,7 @@ def main():
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # Start moving a piece
-                if event.button == pygame.BUTTON_LEFT:
+                if event.button == pygame.BUTTON_LEFT and not any(pressed_modifiers & mod for mod in modifiers):
                     pos = grid_position((mouse_pos[0], mouse_pos[1]), camera, gridsize)
                     if pos in pieces:
                         moving = pos, pieces[pos]
@@ -286,4 +349,11 @@ def main():
 
 
 if __name__ == "__main__":
+    # parser = ArgumentParser()
+    # parser.add_argument("file")
+    #
+    # args = parser.parse_args()
+    #
+    # print(args)
+
     main()
