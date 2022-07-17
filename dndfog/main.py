@@ -8,8 +8,6 @@ from random import randint
 
 import pygame
 
-from dndfog.fps import true_fps
-
 
 class Glow:
     def __init__(self, radius_range: range, inner_color: pygame.Color, outer_color: pygame.Color):
@@ -168,12 +166,11 @@ def get_visible_area_limits(
     return start_x, start_y, end_x, end_y
 
 
-def main():
+def main(map_file: str):
     # Init
     pygame.init()
     os.environ["SDL_VIDEO_CENTERED"] = "1"
     pygame.display.set_caption("DND fog")
-    true_fps.display_caption = "DND fog"
     clock = pygame.time.Clock()
     frame_rate: int = 60
     modifiers = {pygame.KMOD_ALT, pygame.KMOD_CTRL, pygame.KMOD_SHIFT}
@@ -202,8 +199,7 @@ def main():
     display = pygame.display.set_mode(display_size, flags=flags)
 
     # Map setup
-    root_dir = Path(__file__).parent.parent
-    dnd_map = pygame.image.load(root_dir / "test-map.png").convert_alpha()
+    dnd_map = pygame.image.load(map_file).convert_alpha()
     dnd_map.set_colorkey((255, 255, 255))
     dnd_map_size = dnd_map.get_size()
     orig_dnd_map = dnd_map.copy()
@@ -343,17 +339,15 @@ def main():
             draw_fog(display, camera, gridsize, removed_fog)
 
         pygame.display.flip()
-
-        with true_fps.track():
-            clock.tick(frame_rate)
+        clock.tick(frame_rate)
 
 
 if __name__ == "__main__":
-    # parser = ArgumentParser()
-    # parser.add_argument("file")
-    #
-    # args = parser.parse_args()
-    #
-    # print(args)
+    parser = ArgumentParser()
+    root_dir = Path(__file__).parent.parent
 
-    main()
+    parser.add_argument("--file", default=str(root_dir / "test-map.png"))
+
+    args = parser.parse_args()
+
+    main(args.file)
