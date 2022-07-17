@@ -5,13 +5,30 @@ import os
 import sys
 from argparse import ArgumentParser
 from itertools import cycle
-from pathlib import Path
 from random import randint
 
 import pygame
 import pywintypes
 from win32con import OFN_ALLOWMULTISELECT, OFN_EXPLORER
 from win32gui import GetOpenFileNameW, GetSaveFileNameW
+
+
+orig_colors = [
+    (255, 0, 0),  # red
+    (255, 255, 0),  # yellow
+    (0, 0, 255),  # blue
+    (0, 100, 0),  # green
+    (0, 255, 255),  # cyan
+    (255, 0, 255),  # magenta
+    (255, 100, 0),  # orange
+    (100, 0, 100),  # purple
+    (0, 255, 0),  # light green
+    (110, 38, 14),  # brown
+    (255, 192, 203),  # pink
+    (109, 113, 46),  # olive
+    (220, 180, 255),  # lavender
+    (253, 133, 105),  # peach
+]
 
 
 def open_file_dialog(
@@ -286,37 +303,13 @@ def main(map_file: str):
     frame_rate: int = 60
     modifiers = {pygame.KMOD_ALT, pygame.KMOD_CTRL, pygame.KMOD_SHIFT}
 
-    colors = [
-        (255, 0, 0),  # red
-        (255, 255, 0),  # yellow
-        (0, 0, 255),  # blue
-        (0, 100, 0),  # green
-        (0, 255, 255),  # cyan
-        (255, 0, 255),  # magenta
-        (255, 100, 0),  # orange
-        (100, 0, 100),  # purple
-        (0, 255, 0),  # light green
-        (110, 38, 14),  # brown
-        (255, 192, 203),  # pink
-        (109, 113, 46),  # olive
-        (220, 180, 255),  # lavender
-        (253, 133, 105),  # peach
-    ]
-    orig_colors = colors.copy()
-
     # Screen setup
     display_size = (800, 800)
     flags = pygame.SRCALPHA | pygame.RESIZABLE  # | pygame.NOFRAME
     display = pygame.display.set_mode(display_size, flags=flags)
 
-    # Map setup
-    dnd_map = pygame.image.load(map_file).convert_alpha()
-    dnd_map.set_colorkey((255, 255, 255))
-    dnd_map_size = dnd_map.get_size()
-    orig_dnd_map = dnd_map.copy()
-    map_offset = (0, 0)
-
     # Settings
+    colors = orig_colors.copy()
     gridsize = orig_gridsize = 165
     fog_color = (0xCC, 0xCC, 0xCC)
     removed_fog: set[tuple[int, int]] = set()
@@ -326,6 +319,17 @@ def main(map_file: str):
     double_click = 0
     show_grid = True
     show_fog = True
+
+    # Load data
+    if map_file[-5:] == ".json":
+        camera, colors, dnd_map, gridsize, map_offset, orig_dnd_map, pieces, removed_fog = open_data_file(map_file)
+
+    # Load background image
+    else:
+        dnd_map = pygame.image.load(map_file).convert_alpha()
+        dnd_map.set_colorkey((255, 255, 255))
+        orig_dnd_map = dnd_map.copy()
+        map_offset = (0, 0)
 
     while True:
         double_click = double_click - 1 if double_click > 0 else 0
@@ -345,55 +349,28 @@ def main(map_file: str):
 
             if event.type == pygame.KEYDOWN:
 
-                # Save
+                # Save data
                 if pressed_modifiers & pygame.KMOD_CTRL and event.key == pygame.K_s:
-                    savepath = save_file_dialog(
-                        title="Save Map",
-                        ext=[("Json file", "json")],
-                        default_ext="json",
-                    )
-                    if savepath:
-                        data = {
-                            "gridsize": gridsize,
-                            "removed_fog": list(removed_fog),
-                            "background": {
-                                "img": base64.b64encode(pygame.image.tostring(orig_dnd_map, "RGBA")).decode(),
-                                "size": list(orig_dnd_map.get_size()),
-                                "mode": "RGBA",
-                                "zoom": list(dnd_map.get_size()),
-                            },
-                            "pieces": [[key, value] for key, value in pieces.items()],
-                            "camera": camera,
-                            "map_offset": map_offset,
-                        }
+                    save_data_file(camera, dnd_map, gridsize, map_offset, orig_dnd_map, pieces, removed_fog)
 
-                        with open(savepath, "w") as f:
-                            json.dump(data, f, indent=2)
-
-                # Load
+                # Load data
                 if pressed_modifiers & pygame.KMOD_CTRL and event.key == pygame.K_o:
                     openpath = open_file_dialog(
                         title="Open Map",
                         ext=[("Json file", "json")],
                         default_ext="json",
                     )
-                    if openpath:
-                        with open(openpath, "r") as f:
-                            data = json.load(f)
-
-                        gridsize = int(data["gridsize"])
-                        removed_fog = set((x, y) for x, y in data["removed_fog"])
-                        pieces = {tuple(value[0]): tuple(value[1]) for value in data["pieces"]}
-                        orig_dnd_map = pygame.image.fromstring(
-                            base64.b64decode(data["background"]["img"]),
-                            data["background"]["size"],
-                            data["background"]["mode"],
-                        ).convert_alpha()
-                        dnd_map = pygame.transform.scale(orig_dnd_map, data["background"]["zoom"])
-                        camera = tuple(data["camera"])
-                        map_offset = tuple(data["map_offset"])
-
-                        colors = [c for c in orig_colors if c not in pieces.values()]
+                    if not openpath:
+                        (
+                            camera,
+                            colors,
+                            dnd_map,
+                            gridsize,
+                            map_offset,
+                            orig_dnd_map,
+                            pieces,
+                            removed_fog,
+                        ) = open_data_file(openpath)
 
                 # Hide/Show grid
                 if event.key == pygame.K_g:
@@ -414,6 +391,7 @@ def main(map_file: str):
 
                     # If ATL pressed, only change the grid size
                     if not (pressed_modifiers & pygame.KMOD_ALT):
+                        dnd_map_size = orig_dnd_map.get_size()
                         dnd_map = pygame.transform.scale(
                             orig_dnd_map, (dnd_map_size[0] * scale, dnd_map_size[1] * scale)
                         )
@@ -504,12 +482,73 @@ def main(map_file: str):
         clock.tick(frame_rate)
 
 
-if __name__ == "__main__":
-    background_map = open_file_dialog(
-        title="Select background map",
-        ext=[("PNG file", "png"), ("JPG file", "jpg")],
+def save_data_file(camera, dnd_map, gridsize, map_offset, orig_dnd_map, pieces, removed_fog):
+    savepath = save_file_dialog(
+        title="Save Map",
+        ext=[("Json file", "json")],
+        default_ext="json",
     )
-    if not background_map:
-        raise SystemExit("No background file selected.")
+    if savepath:
+        data = {
+            "gridsize": gridsize,
+            "removed_fog": list(removed_fog),
+            "background": {
+                "img": serialize_map(orig_dnd_map),
+                "size": list(orig_dnd_map.get_size()),
+                "mode": "RGBA",
+                "zoom": list(dnd_map.get_size()),
+            },
+            "pieces": [[key, value] for key, value in pieces.items()],
+            "camera": camera,
+            "map_offset": map_offset,
+        }
 
-    main(background_map)
+        with open(savepath, "w") as f:
+            json.dump(data, f, indent=2)
+
+
+def open_data_file(openpath: str):
+    with open(openpath, "r") as f:
+        data = json.load(f)
+
+    gridsize = int(data["gridsize"])
+    removed_fog = set((x, y) for x, y in data["removed_fog"])
+    pieces = {tuple(value[0]): tuple(value[1]) for value in data["pieces"]}
+    orig_dnd_map = deserialize_map(data)
+    dnd_map = pygame.transform.scale(orig_dnd_map, data["background"]["zoom"])
+    camera = tuple(data["camera"])
+    map_offset = tuple(data["map_offset"])
+    colors = [c for c in orig_colors if c not in pieces.values()]
+
+    return camera, colors, dnd_map, gridsize, map_offset, orig_dnd_map, pieces, removed_fog
+
+
+def serialize_map(surface: pygame.Surface) -> str:
+    return base64.b64encode(pygame.image.tostring(surface, "RGBA")).decode()
+
+
+def deserialize_map(data: dict) -> pygame.Surface:
+    return pygame.image.fromstring(
+        base64.b64decode(data["background"]["img"]),
+        data["background"]["size"],
+        data["background"]["mode"],
+    ).convert_alpha()
+
+
+if __name__ == "__main__":
+    parser = ArgumentParser()
+    parser.add_argument("--file", default=None)
+    args = parser.parse_args()
+
+    if args.file is not None:
+        start_file = args.file
+    else:
+        start_file = open_file_dialog(
+            title="Select a background map, or a json data file",
+            ext=[("PNG file", "png"), ("JPG file", "jpg"), ("JSON file", "json")],
+        )
+
+    if not start_file:
+        raise SystemExit("No file selected.")
+
+    main(start_file)
