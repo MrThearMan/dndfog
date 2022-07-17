@@ -558,7 +558,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.file is not None:
-        start_file = args.file
+        start_file = str(args.file)
     else:
         start_file = open_file_dialog(
             title="Select a background map, or a json data file",
@@ -568,4 +568,4 @@ if __name__ == "__main__":
     if not start_file:
         raise SystemExit("No file selected.")
 
-    main(start_file, args.gridsize)
+    main(start_file, int(args.gridsize))
