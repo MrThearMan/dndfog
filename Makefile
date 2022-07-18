@@ -1,5 +1,5 @@
 
-.PHONY: help dev docs tests test tox hook pre-commit mypy Makefile
+.PHONY: help dev docs tests test tox hook pre-commit mypy build Makefile
 
 # Trick to allow passing commands to make
 # Use quotes (" ") if command contains flags (-h / --help)
@@ -21,7 +21,7 @@ help:
 	@echo "  pre-commit           Run pre-commit hooks on all files."
 	@echo "  pre-commit-update    Update all pre-commit hooks to latest versions."
 	@echo "  mypy                 Run mypy on all files."
-    @echo "  build                Build executable with pyinstaller"
+	@echo "  build                Build executable with pyinstaller"
 
 
 dev:

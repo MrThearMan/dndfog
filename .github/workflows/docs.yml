@@ -15,7 +15,7 @@ env:
 
 jobs:
   submit-docs:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
