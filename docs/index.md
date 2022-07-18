@@ -10,7 +10,7 @@ Create battlemaps for tabletop RPGs, like [D&D](https://www.dndbeyond.com/).
 > being Windows only (using pywin32). You're free to modify the code to add file
 > loading and saving for other platforms.
 
-![Example Map](img/example-map.png)
+![Example Map](https://github.com/MrThearMan/dndfog/blob/main/docs/img/example-map.png?raw=true)
 
 ## Features
 
