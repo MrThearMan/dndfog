@@ -12,7 +12,7 @@ args = `arg="$(filter-out $@,$(MAKECMDGOALS))" && echo $${arg:-${1}}`
 help:
 	@echo ""
 	@echo "Commands:"
-	@echo "  dev                  Serve manual testing server"
+	@echo "  run                  Run dndfog as a script."
 	@echo "  docs                 Serve mkdocs for development."
 	@echo "  tests                Run all tests with coverage."
 	@echo "  test <name>          Run all tests maching the given <name>"
@@ -21,11 +21,10 @@ help:
 	@echo "  pre-commit           Run pre-commit hooks on all files."
 	@echo "  pre-commit-update    Update all pre-commit hooks to latest versions."
 	@echo "  mypy                 Run mypy on all files."
-	@echo "  build                Build executable with pyinstaller"
+	@echo "  build                Build executable with pyinstaller."
 
-
-dev:
-	@poetry run python manage.py runserver localhost:8000
+run:
+	@poetry run dndfog
 
 docs:
 	@poetry run mkdocs serve -a localhost:8080
@@ -50,6 +49,6 @@ pre-commit-update:
 
 mypy:
 	@poetry run mypy dndfog
-    
+
 build:
 	@pyinstaller -n dndfog --onefile --noconsole --paths .venv/Lib/site-packages dndfog/main.py

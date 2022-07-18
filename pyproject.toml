@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "dndfog"
 version = "0.1.0"
-description = "DND map with war of fog"
+description = "DND battle map with fog of war"
 authors = [
     "Matti Lamppu <lamppu.matti.akseli@gmail.com>",
 ]
@@ -19,6 +19,7 @@ keywords = [
     "map",
     "combat",
     "infinite",
+    "gird",
 ]
 classifiers = [
     "Programming Language :: Python",
@@ -38,7 +39,7 @@ exclude = [
 
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = ">=3.10"
 pygame = "2.1.2"
 pywin32 = "304"
 
@@ -53,6 +54,9 @@ mypy = "0.961"
 mkdocs = "1.3.0"
 pymdown-extensions = "9.5"
 mkdocs-mermaid2-plugin = "0.6.0"
+
+[tool.poetry.scripts]
+dndfog = "dndfog.main:start"
 
 [tool.black]
 line-length = 120
@@ -71,8 +75,26 @@ ignore-paths = [
     ".tox/*",
 ]
 
+[tool.pylint.BASIC]
+good-names = [
+    "x",
+    "y",
+    "f",
+    "e",
+    "i",
+    "j",
+]
+
 [tool.pylint.messages_control]
 disable = [
+    "import-error",
+    "too-many-locals",
+    "no-else-return",
+    "too-many-arguments",
+    "too-many-branches",
+    "too-many-statements",
+    "too-many-nested-blocks",
+    "unspecified-encoding",
     "missing-module-docstring",
     "missing-class-docstring",
     "missing-function-docstring",

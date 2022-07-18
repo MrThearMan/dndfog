@@ -103,9 +103,9 @@ def open_file_dialog(
 
     except pywintypes.error as e:  # noqa
         if e.winerror == 0:
-            return
+            return None
         else:
-            raise IOError()
+            raise IOError() from e
 
 
 def save_file_dialog(
@@ -147,9 +147,9 @@ def save_file_dialog(
 
     except pywintypes.error as e:
         if e.winerror == 0:
-            return
+            return None
         else:
-            raise IOError()
+            raise IOError() from e
 
 
 class Glow:
@@ -601,7 +601,7 @@ def main(map_file: str, gridsize: int):
         clock.tick(frame_rate)
 
 
-if __name__ == "__main__":
+def start():
     parser = ArgumentParser()
     parser.add_argument("--file", default=None)
     parser.add_argument("--gridsize", default=36)
@@ -619,3 +619,7 @@ if __name__ == "__main__":
         raise SystemExit("No file selected.")
 
     main(start_file, int(args.gridsize))
+
+
+if __name__ == "__main__":
+    start()
