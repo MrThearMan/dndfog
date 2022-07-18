@@ -54,7 +54,7 @@ arguments `--file=<filepath>` or `--gridsize=<size>` to change the opening param
 - Remove fog: `CTRL + Left mouse button`
 - Add fog: `CTRL + Shift + Left mouse button`
 - Add a piece: `Right mouse button`
-- Remove a piece: `Double click: Left mouse button`
+- Remove a piece: `Double click: Right mouse button`
 - Move a piece: `Click and drag: Left mouse button`
 - Move camera: `Click and drag: Middle mouse button`
 - Move background map: `ALT + Click and drag: Left mouse button`
