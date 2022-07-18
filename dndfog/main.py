@@ -447,7 +447,6 @@ def main(map_file: str, gridsize: int):
         double_click = double_click - 1 if double_click > 0 else 0
 
         mouse_pos = pygame.mouse.get_pos()
-        # pressed_keys = pygame.key.get_pressed()
         pressed_modifiers = pygame.key.get_mods()
         pressed_buttons = pygame.mouse.get_pressed()
         mouse_speed = pygame.mouse.get_rel()
