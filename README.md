@@ -1,8 +1,24 @@
 # DnD Fog
 
+[![Coverage Status][coverage-badge]][coverage]
+[![GitHub Workflow Status][status-badge]][status]
+[![PyPI][pypi-badge]][pypi]
+[![GitHub][licence-badge]][licence]
+[![GitHub Last Commit][repo-badge]][repo]
+[![GitHub Issues][issues-badge]][issues]
+[![Python Version][version-badge]][pypi]
+
 ```shell
 pip install dndfog
 ```
+
+---
+
+**Documentation**: [https://mrthearman.github.io/dndfog/](https://mrthearman.github.io/dndfog/)
+
+**Source Code**: [https://github.com/MrThearMan/dndfog/](https://github.com/MrThearMan/dndfog/)
+
+---
 
 Create battlemaps for tabletop RPGs, like [D&D](https://www.dndbeyond.com/).
 
@@ -67,3 +83,19 @@ There is no undo or redo. Might add later.
 There is no way to mark/point on things on the map (apart from the mouse cursor).
 Might add later.
 
+[coverage-badge]: https://coveralls.io/repos/github/MrThearMan/dndfog/badge.svg?branch=main
+[status-badge]: https://img.shields.io/github/workflow/status/MrThearMan/dndfog/Test
+[pypi-badge]: https://img.shields.io/pypi/v/dndfog
+[licence-badge]: https://img.shields.io/github/license/MrThearMan/dndfog
+[repo-badge]: https://img.shields.io/github/last-commit/MrThearMan/dndfog
+[issues-badge]: https://img.shields.io/github/issues-raw/MrThearMan/dndfog
+[version-badge]: https://img.shields.io/pypi/pyversions/dndfog
+[loc-badge]: https://img.shields.io/tokei/lines/github.com/MrThearMan/dndfog
+[downloads-badge]: https://img.shields.io/pypi/dm/dndfog
+
+[coverage]: https://coveralls.io/github/MrThearMan/dndfog?branch=main
+[status]: https://github.com/MrThearMan/dndfog/actions/workflows/test.yml
+[pypi]: https://pypi.org/project/dndfog
+[licence]: https://github.com/MrThearMan/dndfog/blob/main/LICENSE
+[repo]: https://github.com/MrThearMan/dndfog/commits/main
+[issues]: https://github.com/MrThearMan/dndfog/issues
