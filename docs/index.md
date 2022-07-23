@@ -34,6 +34,7 @@ Create battlemaps for tabletop RPGs, like [D&D](https://www.dndbeyond.com/).
 - Add and remove a [fog of war](https://en.wikipedia.org/wiki/Fog_of_war) effect
 - Import maps from image files
 - Place, move and remove pieces on a grid (can be matched to image grid)
+- Place 1x1, 2x2, 3x3, or 4x4 pieces
 - Save and load file to JSON files (background image saved in the JSON file!)
 
 ## How to use
@@ -55,8 +56,12 @@ arguments `--file=<filepath>` or `--gridsize=<size>` to change the opening param
 - Move background map: `ALT + Click and drag: Left mouse button`
 - Zoom in: `Scroll wheel: Up`
 - Zoom out: `Scroll wheel: Down`
-- Show/hide fog: `1`
-- Show/hide grid: `g`
+- Select 1x1 piece placement: `1`
+- Select 2x2 piece placement: `2`
+- Select 3x3 piece placement: `3`
+- Select 4x4 piece placement: `4`
+- Show/hide fog: `F1`
+- Show/hide grid: `F12`
 - Save file: `CTRL + s`
 - Open file: `CTRL + o`
 - Quit program: `Esc`

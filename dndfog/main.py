@@ -6,12 +6,38 @@ import sys
 from argparse import ArgumentParser
 from itertools import cycle
 from random import randint
-from typing import NamedTuple
+from typing import NamedTuple, TypedDict
 
 import pygame
 import pywintypes
 from win32con import OFN_ALLOWMULTISELECT, OFN_EXPLORER
 from win32gui import GetOpenFileNameW, GetSaveFileNameW
+
+
+class BackgroundImage(TypedDict):
+    img: str
+    size: tuple[int, int]
+    mode: str
+    zoom: tuple[int, int]
+
+
+class PieceData(TypedDict):
+    place: tuple[int, int]
+    color: tuple[int, int, int]
+    size: int
+    show: bool
+
+
+class SaveData(TypedDict):
+    gridsize: int
+    orig_gridsize: int
+    removed_fog: list[tuple[int, int]]
+    background: BackgroundImage
+    pieces: list[PieceData]
+    camera: tuple[int, int]
+    map_offset: tuple[int, int]
+    show_grid: bool
+    show_fog: bool
 
 
 class ImportData(NamedTuple):
@@ -21,7 +47,7 @@ class ImportData(NamedTuple):
     orig_gridsize: int
     camera: tuple[int, int]
     map_offset: tuple[int, int]
-    pieces: dict[tuple[int, int], tuple[int, int, int]]
+    pieces: dict[tuple[int, int], PieceData]
     removed_fog: set[tuple[int, int]]
     colors: list[tuple[int, int, int]]
     show_grid: bool
@@ -277,13 +303,13 @@ def draw_fog(
     camera: tuple[int, int],
     gridsize: int,
     removed: set[tuple[int, int]],
-    color: tuple[int, int, int] = (0xC5, 0xC5, 0xC5),
+    fog_color: tuple[int, int, int],
 ) -> None:
 
     start_x, start_y, end_x, end_y = get_visible_area_limits(display, camera, gridsize)
     start_x, start_y, end_x, end_y = start_x // gridsize, start_y // gridsize, end_x // gridsize, end_y // gridsize
 
-    inner_color = pygame.Color(*color)
+    inner_color = pygame.Color(*fog_color)
     outer_color = copy.deepcopy(inner_color)
     outer_color.a = 0
 
@@ -320,7 +346,7 @@ def save_data_file(
     camera: tuple[int, int],
     zoom: tuple[int, int],
     map_offset: tuple[int, int],
-    pieces: dict[tuple[int, int], tuple[int, int, int]],
+    pieces: dict[tuple[int, int], PieceData],
     removed_fog: set[tuple[int, int]],
     show_grid: bool,
     show_fog: bool,
@@ -331,22 +357,22 @@ def save_data_file(
         default_ext="json",
     )
     if savepath:
-        data = {
-            "gridsize": gridsize,
-            "orig_gridsize": orig_gridsize,
-            "removed_fog": list(removed_fog),
-            "background": {
-                "img": serialize_map(orig_dnd_map),
-                "size": list(orig_dnd_map.get_size()),
-                "mode": "RGBA",
-                "zoom": list(zoom),
-            },
-            "pieces": [[key, value] for key, value in pieces.items()],
-            "camera": camera,
-            "map_offset": map_offset,
-            "show_grid": show_grid,
-            "show_fog": show_fog,
-        }
+        data = SaveData(
+            gridsize=gridsize,
+            orig_gridsize=orig_gridsize,
+            removed_fog=list(removed_fog),
+            background=BackgroundImage(
+                img=serialize_map(orig_dnd_map),
+                size=orig_dnd_map.get_size(),
+                mode="RGBA",
+                zoom=zoom,
+            ),
+            pieces=list(pieces.values()),
+            camera=camera,
+            map_offset=map_offset,
+            show_grid=show_grid,
+            show_fog=show_fog,
+        )
 
         with open(savepath, "w") as f:
             json.dump(data, f, indent=2)
@@ -359,14 +385,22 @@ def open_data_file(openpath: str) -> ImportData:
     gridsize = int(data["gridsize"])
     orig_gridsize = int(data["orig_gridsize"])
     removed_fog = set((x, y) for x, y in data["removed_fog"])
-    pieces = {tuple(value[0]): tuple(value[1]) for value in data["pieces"]}
+    pieces = {
+        tuple(piece["place"]): PieceData(
+            place=tuple(piece["place"]),
+            color=tuple(piece["color"]),
+            size=int(piece["size"]),
+            show=piece["show"],
+        )
+        for piece in data["pieces"]
+    }
     orig_dnd_map = deserialize_map(data)
     dnd_map = pygame.transform.scale(orig_dnd_map, data["background"]["zoom"])
     camera = tuple(data["camera"])
     map_offset = tuple(data["map_offset"])
-    colors = [c for c in orig_colors if c not in pieces.values()]
-    show_grid = bool(data["show_grid"] == "true")
-    show_fog = bool(data["show_fog"])
+    colors = [color for color in orig_colors if color not in {piece["color"] for piece in pieces.values()}]
+    show_grid = data["show_grid"]
+    show_fog = data["show_fog"]
 
     return ImportData(
         dnd_map=dnd_map,
@@ -395,31 +429,141 @@ def deserialize_map(data: dict) -> pygame.Surface:
     ).convert_alpha()
 
 
-def main(map_file: str, gridsize: int):
+def draw_pieces(
+    display: pygame.Surface,
+    pieces: dict[tuple[int, int], PieceData],
+    camera: tuple[int, int],
+    gridsize: int,
+) -> None:
+    for (x, y), piece_data in pieces.items():
+        if not piece_data["show"]:
+            continue
+
+        color = piece_data["color"]
+        size = piece_data["size"]
+        pygame.draw.circle(
+            display,
+            color=color,
+            center=draw_position((x + (0.5 * size), y + (0.5 * size)), camera, gridsize),
+            radius=(7 * (gridsize * size)) // 16,
+        )
+
+
+def add_piece(
+    add_place: tuple[int, int],
+    pieces: dict[tuple[int, int], PieceData],
+    colors: list[tuple[int, int, int]],
+    selected_size: int,
+) -> None:
+    no_overlap_with_other_pieces = not any(
+        (add_place[0] + x, add_place[1] + y) in pieces for x in range(selected_size) for y in range(selected_size)
+    )
+    if no_overlap_with_other_pieces:
+        color = (
+            # Prefedined Color
+            colors.pop(0)
+            if len(colors) > 0
+            # Random Color
+            else (randint(0, 255), randint(0, 255), randint(0, 255))
+        )
+
+        for x in range(selected_size):
+            for y in range(selected_size):
+                pieces[(add_place[0] + x, add_place[1] + y)] = PieceData(
+                    place=add_place,
+                    color=color,
+                    size=selected_size,
+                    show=(x == 0 and y == 0),
+                )
+
+
+def remove_piece(
+    next_place: tuple[int, int],
+    pieces: dict[tuple[int, int], PieceData],
+    colors: list[tuple[int, int, int]],
+) -> None:
+    piece_data: PieceData | None = pieces.get(next_place, None)
+    if piece_data is not None:
+        place = piece_data["place"]
+        size = piece_data["size"]
+        color = piece_data["color"]
+
+        for x in range(size):
+            for y in range(size):
+                pieces.pop((place[0] + x, place[1] + y), None)
+                if color in orig_colors and color not in colors:
+                    colors.insert(0, color)
+
+
+def move_piece(
+    current_place: tuple[int, int],
+    piece_to_move: PieceData,
+    mouse_pos: tuple[int, int],
+    pieces: dict[tuple[int, int], PieceData],
+    camera: tuple[int, int],
+    gridsize: int,
+) -> tuple[tuple[int, int], PieceData]:
+    piece_place = piece_to_move["place"]
+    piece_size = piece_to_move["size"]
+    next_place = grid_position((mouse_pos[0], mouse_pos[1]), camera, gridsize)
+    movement = (next_place[0] - current_place[0], next_place[1] - current_place[1])
+    current_self_positions = {
+        (piece_place[0] + x, piece_place[1] + y) for x in range(piece_size) for y in range(piece_size)
+    }
+    next_self_positions = {(x + movement[0], y + movement[1]) for x, y in current_self_positions}
+    no_overlap_with_other_pieces = not any(
+        pos in pieces for pos in next_self_positions if pos not in current_self_positions
+    )
+
+    moving = current_place, piece_to_move
+
+    if next_place != current_place and no_overlap_with_other_pieces:
+        # Remove own positions
+        for self_pos in current_self_positions:
+            pieces.pop(self_pos, None)
+
+        # Add own positions back
+        for self_pos in current_self_positions:
+            pieces[(self_pos[0] + movement[0], self_pos[1] + movement[1])] = PieceData(
+                place=(piece_place[0] + movement[0], piece_place[1] + movement[1]),
+                color=piece_to_move["color"],
+                size=piece_size,
+                show=(self_pos[0] == piece_place[0] and self_pos[1] == piece_place[1]),
+            )
+
+        moving = next_place, pieces[next_place]
+
+    return moving
+
+
+def main(map_file: str, gridsize: int) -> None:
     # Init
     pygame.init()
     os.environ["SDL_VIDEO_CENTERED"] = "1"
     pygame.display.set_caption("DND fog")
     clock = pygame.time.Clock()
     frame_rate: int = 60
+
+    # Settings
+    double_click = 0
+    colors = orig_colors.copy()
     modifiers = {pygame.KMOD_ALT, pygame.KMOD_CTRL, pygame.KMOD_SHIFT}
+    moving: tuple[tuple[int, int], PieceData] | None = None
+    fog_color = (0xCC, 0xCC, 0xCC)
+    selected_size = 1
 
     # Screen setup
-    display_size = (800, 800)
+    display_size = (1200, 800)
     flags = pygame.SRCALPHA | pygame.RESIZABLE  # | pygame.NOFRAME
     display = pygame.display.set_mode(display_size, flags=flags)
 
-    # Settings
-    colors = orig_colors.copy()
+    # Map data
     orig_gridsize = gridsize
-    fog_color = (0xCC, 0xCC, 0xCC)
     removed_fog: set[tuple[int, int]] = set()
-    pieces: dict[tuple[int, int], tuple[int, int, int]] = {}
-    moving: tuple[tuple[int, int], tuple[int, int, int]] | None = None
+    pieces: dict[tuple[int, int], PieceData] = {}
     camera = (0, 0)
-    double_click = 0
-    show_grid = True
-    show_fog = True
+    show_grid = False
+    show_fog = False
 
     # Load data
     if map_file[-5:] == ".json":
@@ -482,7 +626,7 @@ def main(map_file: str, gridsize: int):
                         ext=[("Json file", "json")],
                         default_ext="json",
                     )
-                    if not openpath:
+                    if openpath:
                         import_data = open_data_file(openpath)
                         dnd_map = import_data.dnd_map
                         orig_dnd_map = import_data.orig_dnd_map
@@ -497,13 +641,30 @@ def main(map_file: str, gridsize: int):
                         show_fog = import_data.show_fog
 
                 # Hide/Show grid
-                if event.key == pygame.K_g:
+                if event.key == pygame.K_F1:
                     show_grid = not show_grid
+
                 # Hide/Show fog
-                if event.key == pygame.K_1:
+                if event.key == pygame.K_F12:
                     show_fog = not show_fog
 
-            # Zoom
+                # Select size (5x5)
+                if event.key == pygame.K_1:
+                    selected_size = 1
+
+                # Select size (10x10)
+                if event.key == pygame.K_2:
+                    selected_size = 2
+
+                # Select size (15x15)
+                if event.key == pygame.K_3:
+                    selected_size = 3
+
+                # Select size (20x20)
+                if event.key == pygame.K_4:
+                    selected_size = 4
+
+            # Zoom map
             if event.type == pygame.MOUSEWHEEL:
                 old_gridsize = gridsize
                 if gridsize + event.y > 0:
@@ -517,30 +678,20 @@ def main(map_file: str, gridsize: int):
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # Start moving a piece
                 if event.button == pygame.BUTTON_LEFT and not any(pressed_modifiers & mod for mod in modifiers):
-                    pos = grid_position((mouse_pos[0], mouse_pos[1]), camera, gridsize)
-                    if pos in pieces:
-                        moving = pos, pieces[pos]
+                    next_place = grid_position((mouse_pos[0], mouse_pos[1]), camera, gridsize)
+                    if next_place in pieces:
+                        moving = next_place, pieces[next_place]
 
                 if event.button == pygame.BUTTON_RIGHT:
-                    pos = grid_position((mouse_pos[0], mouse_pos[1]), camera, gridsize)
+                    next_place = grid_position((mouse_pos[0], mouse_pos[1]), camera, gridsize)
 
                     # Remove piece
                     if double_click:
-                        color = pieces.pop(pos, None)
-                        if color in orig_colors:
-                            colors.insert(0, color)
+                        remove_piece(next_place, pieces, colors)
 
                     # Add a piece
                     else:
-                        if pos not in pieces:
-                            # Predefined color
-                            if len(colors) > 0:
-                                pieces[pos] = colors.pop(0)
-
-                            # Random color
-                            else:
-                                pieces[pos] = (randint(0, 255), randint(0, 255), randint(0, 255))
-
+                        add_piece(next_place, pieces, colors, selected_size)
                         double_click = 15
 
             if event.type == pygame.MOUSEBUTTONUP:
@@ -553,11 +704,7 @@ def main(map_file: str, gridsize: int):
 
                 # Moving a piece
                 if moving is not None:
-                    pos = grid_position((mouse_pos[0], mouse_pos[1]), camera, gridsize)
-                    if pos != moving[0] and pos not in pieces:
-                        pieces.pop(moving[0], None)
-                        pieces[pos] = moving[1]
-                        moving = pos, moving[1]
+                    moving = move_piece(moving[0], moving[1], mouse_pos, pieces, camera, gridsize)
 
                 else:
                     # Move map
@@ -566,12 +713,12 @@ def main(map_file: str, gridsize: int):
 
                     # Add and remove fog
                     if pressed_modifiers & pygame.KMOD_CTRL:
-                        pos = grid_position((mouse_pos[0], mouse_pos[1]), camera, gridsize)
+                        next_place = grid_position((mouse_pos[0], mouse_pos[1]), camera, gridsize)
 
                         if pressed_modifiers & pygame.KMOD_SHIFT:
-                            removed_fog.discard(pos)
+                            removed_fog.discard(next_place)
                         else:
-                            removed_fog.add(pos)
+                            removed_fog.add(next_place)
 
             # Middle mouse button
             if pressed_buttons[1]:
@@ -585,22 +732,16 @@ def main(map_file: str, gridsize: int):
         if show_grid:
             draw_grid(display, camera, gridsize)
 
-        for (x, y), color in pieces.items():
-            pygame.draw.circle(
-                display,
-                color,
-                draw_position((x + 0.5, y + 0.5), camera, gridsize),
-                (7 * gridsize) // 16,
-            )
+        draw_pieces(display, pieces, camera, gridsize)
 
         if show_fog:
-            draw_fog(display, camera, gridsize, removed_fog)
+            draw_fog(display, camera, gridsize, removed_fog, fog_color)
 
         pygame.display.flip()
         clock.tick(frame_rate)
 
 
-def start():
+def start() -> None:
     parser = ArgumentParser()
     parser.add_argument("--file", default=None)
     parser.add_argument("--gridsize", default=36)
