@@ -5,6 +5,7 @@ import os
 import sys
 from argparse import ArgumentParser
 from itertools import cycle
+from math import sqrt
 from random import randint
 from typing import NamedTuple, TypedDict
 
@@ -12,6 +13,75 @@ import pygame
 import pywintypes
 from win32con import OFN_ALLOWMULTISELECT, OFN_EXPLORER
 from win32gui import GetOpenFileNameW, GetSaveFileNameW
+
+
+class Glow:
+    def __init__(self, radius_range: range, inner_color: pygame.Color, outer_color: pygame.Color):
+        self._radius_range = radius_range
+        self.inner_color = inner_color
+        self.outer_color = outer_color
+        self._glow_cycle = cycle([self._build_glow(radius_range, inner_color, outer_color)])
+
+    @property
+    def color(self) -> tuple[int, int, int, int]:
+        return self.inner_color.r, self.inner_color.g, self.inner_color.b, self.inner_color.a
+
+    @property
+    def radius(self) -> int:
+        return next(self).get_width() // 2
+
+    @classmethod
+    def uniform(cls, radius: int, color) -> "Glow":
+        if not isinstance(color, pygame.Color):
+            color = pygame.Color(*color)
+
+        outer_color = copy.deepcopy(color)
+        outer_color.a = 0
+
+        return cls(range(radius, 0, -1), color, outer_color)
+
+    def __iter__(self) -> "Glow":
+        return self
+
+    def __next__(self) -> pygame.Surface:
+        return next(self._glow_cycle)
+
+    @staticmethod
+    def _build_glow(radius_range: range, inner_color: pygame.Color, outer_color: pygame.Color) -> pygame.Surface:
+        colors, radii = [], []
+
+        lerp_steps = range(1, len(radius_range) + 1)
+
+        # create colors for glow from the largest circle's color to the smallest
+        for lerp_step, radius_step in zip(lerp_steps, radius_range):
+            lerped_color = outer_color.lerp(inner_color, lerp_step / len(radius_range))
+
+            radii.append(radius_step)
+            colors.append(lerped_color)
+
+        glow_surface_size = 2 * radius_range.start, 2 * radius_range.start
+        glow_surface_center = radius_range.start, radius_range.start
+        # Glow circles are not solid so that blend mode works right and each band has 1 pixel overlap
+        band_width = abs(radius_range.step) + 1
+
+        glow = pygame.Surface(glow_surface_size, flags=pygame.SRCALPHA)
+
+        # Draw glow in shrinking circles. Draw a circle first to a temp surface
+        # and then blit that to the glow surface with it's alpha value in RGBA-MAX blend mode.
+        for i, (circle_color, circle_radius) in enumerate(zip(colors, radii)):
+            temp_surface = pygame.Surface(glow_surface_size, flags=pygame.SRCALPHA)
+            pygame.draw.circle(
+                temp_surface,
+                circle_color,
+                glow_surface_center,
+                circle_radius,
+                band_width if i != len(colors) - 1 else 0,
+            )
+            temp_surface.set_alpha(circle_color.a)
+
+            glow.blit(temp_surface, (0, 0), special_flags=pygame.BLEND_RGBA_MAX)
+
+        return glow
 
 
 class BackgroundImage(TypedDict):
@@ -28,12 +98,24 @@ class PieceData(TypedDict):
     show: bool
 
 
+class AreaOfEffectData(TypedDict):
+    origin: tuple[int, int]
+    glow: Glow
+
+
+class AreaOfEffectSaveData(TypedDict):
+    origin: tuple[int, int]
+    radius: int
+    color: tuple[int, int, int, int]
+
+
 class SaveData(TypedDict):
     gridsize: int
     orig_gridsize: int
     removed_fog: list[tuple[int, int]]
     background: BackgroundImage
     pieces: list[PieceData]
+    aoes: list[AreaOfEffectSaveData]
     camera: tuple[int, int]
     map_offset: tuple[int, int]
     show_grid: bool
@@ -48,6 +130,7 @@ class ImportData(NamedTuple):
     camera: tuple[int, int]
     map_offset: tuple[int, int]
     pieces: dict[tuple[int, int], PieceData]
+    aoes: dict[tuple[int, int], AreaOfEffectData]
     removed_fog: set[tuple[int, int]]
     colors: list[tuple[int, int, int]]
     show_grid: bool
@@ -178,67 +261,6 @@ def save_file_dialog(
             raise IOError() from e
 
 
-class Glow:
-    def __init__(self, radius_range: range, inner_color: pygame.Color, outer_color: pygame.Color):
-        self._radius_range = radius_range
-        self._inner_color = inner_color
-        self._outer_color = outer_color
-        self._glow_cycle = cycle([self._build_glow(radius_range, inner_color, outer_color)])
-
-    @classmethod
-    def uniform(cls, radius: int, color) -> "Glow":
-        if not isinstance(color, pygame.Color):
-            color = pygame.Color(*color)
-
-        outer_color = copy.deepcopy(color)
-        outer_color.a = 0
-
-        return cls(range(radius, 0, -1), color, outer_color)
-
-    def __iter__(self) -> "Glow":
-        return self
-
-    def __next__(self) -> pygame.Surface:
-        return next(self._glow_cycle)
-
-    @staticmethod
-    def _build_glow(radius_range: range, inner_color: pygame.Color, outer_color: pygame.Color) -> pygame.Surface:
-        colors, radii = [], []
-
-        lerp_steps = range(1, len(radius_range) + 1)
-
-        # create colors for glow from the largest circle's color to the smallest
-        for lerp_step, radius_step in zip(lerp_steps, radius_range):
-            lerped_color = outer_color.lerp(inner_color, lerp_step / len(radius_range))
-
-            radii.append(radius_step)
-            colors.append(lerped_color)
-
-        glow_surface_size = 2 * radius_range.start, 2 * radius_range.start
-        glow_surface_center = radius_range.start, radius_range.start
-        # Glow circles are not solid so that blend mode works right and each band has 1 pixel overlap
-        band_width = abs(radius_range.step) + 1
-
-        glow = pygame.Surface(glow_surface_size, flags=pygame.SRCALPHA)
-
-        # Draw glow in shrinking circles. Draw a circle first to a temp surface
-        # and then blit that to the glow surface with it's alpha value in RGBA-MAX blend mode.
-        for i, (circle_color, circle_radius) in enumerate(zip(colors, radii)):
-            temp_surface = pygame.Surface(glow_surface_size, flags=pygame.SRCALPHA)
-            pygame.draw.circle(
-                temp_surface,
-                circle_color,
-                glow_surface_center,
-                circle_radius,
-                band_width if i != len(colors) - 1 else 0,
-            )
-            temp_surface.set_alpha(circle_color.a)
-
-            glow.blit(temp_surface, (0, 0), special_flags=pygame.BLEND_RGBA_MAX)
-
-        return glow
-
-
 def approx(value: int | float, /) -> int:
     return int(value) if value > 0 else int(value - 1)
 
@@ -347,6 +369,7 @@ def save_data_file(
     zoom: tuple[int, int],
     map_offset: tuple[int, int],
     pieces: dict[tuple[int, int], PieceData],
+    aoes: dict[tuple[int, int], AreaOfEffectData],
     removed_fog: set[tuple[int, int]],
     show_grid: bool,
     show_fog: bool,
@@ -368,6 +391,14 @@ def save_data_file(
                 zoom=zoom,
             ),
             pieces=list(pieces.values()),
+            aoes=[
+                AreaOfEffectSaveData(
+                    origin=aoe["origin"],
+                    radius=aoe["glow"].radius,
+                    color=aoe["glow"].color,
+                )
+                for aoe in aoes.values()
+            ],
             camera=camera,
             map_offset=map_offset,
             show_grid=show_grid,
@@ -380,7 +411,7 @@ def save_data_file(
 
 def open_data_file(openpath: str) -> ImportData:
     with open(openpath, "r") as f:
-        data = json.load(f)
+        data: SaveData = json.load(f)
 
     gridsize = int(data["gridsize"])
     orig_gridsize = int(data["orig_gridsize"])
@@ -393,6 +424,17 @@ def open_data_file(openpath: str) -> ImportData:
             show=piece["show"],
         )
         for piece in data["pieces"]
+    }
+    aoes = {
+        tuple(aoe["origin"]): AreaOfEffectData(
+            origin=tuple(aoe["origin"]),
+            glow=Glow(
+                radius_range=range(aoe["radius"], aoe["radius"] - 1, -1),
+                inner_color=pygame.Color(*aoe["color"]),
+                outer_color=pygame.Color(*aoe["color"]),
+            ),
+        )
+        for aoe in data["aoes"] or {}
     }
     orig_dnd_map = deserialize_map(data)
     dnd_map = pygame.transform.scale(orig_dnd_map, data["background"]["zoom"])
@@ -410,6 +452,7 @@ def open_data_file(openpath: str) -> ImportData:
         camera=camera,
         map_offset=map_offset,
         pieces=pieces,
+        aoes=aoes,
         removed_fog=removed_fog,
         colors=colors,
         show_grid=show_grid,
@@ -447,6 +490,17 @@ def draw_pieces(
             center=draw_position((x + (0.5 * size), y + (0.5 * size)), camera, gridsize),
             radius=(7 * (gridsize * size)) // 16,
         )
+
+
+def draw_aoes(
+    display: pygame.Surface,
+    aoes: dict[tuple[int, int], AreaOfEffectData],
+    camera: tuple[int, int],
+) -> None:
+    for (x, y), aoe_data in aoes.items():
+        glow = next(aoe_data["glow"])
+        size = glow.get_size()
+        display.blit(glow, (x - (size[0] // 2) - camera[0], y - (size[1] // 2) - camera[1]))
 
 
 def add_piece(
@@ -497,15 +551,13 @@ def remove_piece(
 
 def move_piece(
     current_place: tuple[int, int],
+    next_place: tuple[int, int],
     piece_to_move: PieceData,
-    mouse_pos: tuple[int, int],
     pieces: dict[tuple[int, int], PieceData],
-    camera: tuple[int, int],
-    gridsize: int,
 ) -> tuple[tuple[int, int], PieceData]:
     piece_place = piece_to_move["place"]
     piece_size = piece_to_move["size"]
-    next_place = grid_position((mouse_pos[0], mouse_pos[1]), camera, gridsize)
+
     movement = (next_place[0] - current_place[0], next_place[1] - current_place[1])
     current_self_positions = {
         (piece_place[0] + x, piece_place[1] + y) for x in range(piece_size) for y in range(piece_size)
@@ -536,6 +588,61 @@ def move_piece(
     return moving
 
 
+def add_aoe(
+    mouse_pos: tuple[int, int],
+    aoes: dict[tuple[int, int], AreaOfEffectData],
+    gridsize: int,
+) -> tuple[tuple[int, int], AreaOfEffectData]:
+    color = pygame.Color(randint(0, 255), randint(0, 255), randint(0, 255), 100)
+    aoes[mouse_pos] = AreaOfEffectData(
+        origin=mouse_pos,
+        glow=Glow(radius_range=range(gridsize, gridsize - 1, -1), inner_color=color, outer_color=color),
+    )
+    return mouse_pos, aoes[mouse_pos]
+
+
+def make_aoe(
+    origin: tuple[int, int],
+    mouse_pos: tuple[int, int],
+    aoe: AreaOfEffectData,
+    aoes: dict[tuple[int, int], AreaOfEffectData],
+    gridsize: int,
+) -> tuple[tuple[int, int], AreaOfEffectData]:
+
+    making_aoe = origin, aoe
+    dist = int(sqrt(((origin[0] - mouse_pos[0]) ** 2) + ((origin[1] - mouse_pos[1]) ** 2)))
+    radius = max(dist, gridsize)
+
+    if radius != 0:
+        aoes[origin] = AreaOfEffectData(
+            origin=origin,
+            glow=Glow(
+                radius_range=range(radius, radius - 1, -1),
+                inner_color=aoe["glow"].inner_color,
+                outer_color=aoe["glow"].outer_color,
+            ),
+        )
+        making_aoe = origin, aoes[origin]
+
+    return making_aoe
+
+
+def remove_aoe(
+    mouse_pos: tuple[int, int],
+    aoes: dict[tuple[int, int], AreaOfEffectData],
+) -> None:
+    to_remove: set[tuple[int, int]] = set()
+    for origin, aoe_data in aoes.items():
+        radius = aoe_data["glow"].radius
+        dist = sqrt(((origin[0] - mouse_pos[0]) ** 2) + ((origin[1] - mouse_pos[1]) ** 2))
+
+        if dist <= radius:
+            to_remove.add(origin)
+
+    for origin in to_remove:
+        aoes.pop(origin, None)
+
+
 def main(map_file: str, gridsize: int) -> None:
     # Init
     pygame.init()
@@ -548,7 +655,8 @@ def main(map_file: str, gridsize: int) -> None:
     double_click = 0
     colors = orig_colors.copy()
     modifiers = {pygame.KMOD_ALT, pygame.KMOD_CTRL, pygame.KMOD_SHIFT}
-    moving: tuple[tuple[int, int], PieceData] | None = None
+    moving_piece: tuple[tuple[int, int], PieceData] | None = None
+    making_aoe: tuple[tuple[int, int], AreaOfEffectData] | None = None
     fog_color = (0xCC, 0xCC, 0xCC)
     selected_size = 1
 
@@ -561,6 +669,7 @@ def main(map_file: str, gridsize: int) -> None:
     orig_gridsize = gridsize
     removed_fog: set[tuple[int, int]] = set()
     pieces: dict[tuple[int, int], PieceData] = {}
+    aoes: dict[tuple[int, int], AreaOfEffectData] = {}
     camera = (0, 0)
     show_grid = False
     show_fog = False
@@ -575,6 +684,7 @@ def main(map_file: str, gridsize: int) -> None:
         camera = import_data.camera
         map_offset = import_data.map_offset
         pieces = import_data.pieces
+        aoes = import_data.aoes
         removed_fog = import_data.removed_fog
         colors = import_data.colors
         show_grid = import_data.show_grid
@@ -614,6 +724,7 @@ def main(map_file: str, gridsize: int) -> None:
                         zoom=dnd_map.get_size(),
                         map_offset=map_offset,
                         pieces=pieces,
+                        aoes=aoes,
                         removed_fog=removed_fog,
                         show_grid=show_grid,
                         show_fog=show_fog,
@@ -635,6 +746,7 @@ def main(map_file: str, gridsize: int) -> None:
                         camera = import_data.camera
                         map_offset = import_data.map_offset
                         pieces = import_data.pieces
+                        aoes = import_data.aoes
                         removed_fog = import_data.removed_fog
                         colors = import_data.colors
                         show_grid = import_data.show_grid
@@ -676,35 +788,57 @@ def main(map_file: str, gridsize: int) -> None:
                     dnd_map = pygame.transform.scale(orig_dnd_map, (dnd_map_size[0] * scale, dnd_map_size[1] * scale))
 
             if event.type == pygame.MOUSEBUTTONDOWN:
+
                 # Start moving a piece
                 if event.button == pygame.BUTTON_LEFT and not any(pressed_modifiers & mod for mod in modifiers):
                     next_place = grid_position((mouse_pos[0], mouse_pos[1]), camera, gridsize)
                     if next_place in pieces:
-                        moving = next_place, pieces[next_place]
+                        moving_piece = next_place, pieces[next_place]
 
                 if event.button == pygame.BUTTON_RIGHT:
                     next_place = grid_position((mouse_pos[0], mouse_pos[1]), camera, gridsize)
 
-                    # Remove piece
                     if double_click:
-                        remove_piece(next_place, pieces, colors)
+                        double_click = 0
+                        making_aoe = None
+                        moving_piece = None
+
+                        # Remove aoe
+                        if pressed_modifiers & pygame.KMOD_CTRL and pressed_modifiers & pygame.KMOD_SHIFT:
+                            remove_aoe(mouse_pos, aoes)
+
+                        # Remove piece
+                        else:
+                            remove_piece(next_place, pieces, colors)
+
+                    # Add area of effect
+                    elif pressed_modifiers & pygame.KMOD_CTRL and not pressed_modifiers & pygame.KMOD_SHIFT:
+                        making_aoe = add_aoe(mouse_pos, aoes, gridsize)
 
                     # Add a piece
-                    else:
+                    elif not any(pressed_modifiers & mod for mod in modifiers):
                         add_piece(next_place, pieces, colors, selected_size)
+                        double_click = 15
+
+                    else:
                         double_click = 15
 
             if event.type == pygame.MOUSEBUTTONUP:
                 # Stop moving a piece
                 if event.button == pygame.BUTTON_LEFT:
-                    moving = None
+                    moving_piece = None
+
+                # Stop making an aoe
+                if event.button == pygame.BUTTON_RIGHT:
+                    making_aoe = None
 
             # Left mouse button
             if pressed_buttons[0]:
+                next_place = grid_position((mouse_pos[0], mouse_pos[1]), camera, gridsize)
 
                 # Moving a piece
-                if moving is not None:
-                    moving = move_piece(moving[0], moving[1], mouse_pos, pieces, camera, gridsize)
+                if moving_piece is not None:
+                    moving_piece = move_piece(moving_piece[0], next_place, moving_piece[1], pieces)
 
                 else:
                     # Move map
@@ -713,8 +847,6 @@ def main(map_file: str, gridsize: int) -> None:
 
                     # Add and remove fog
                     if pressed_modifiers & pygame.KMOD_CTRL:
-                        next_place = grid_position((mouse_pos[0], mouse_pos[1]), camera, gridsize)
-
                         if pressed_modifiers & pygame.KMOD_SHIFT:
                             removed_fog.discard(next_place)
                         else:
@@ -725,9 +857,17 @@ def main(map_file: str, gridsize: int) -> None:
                 # Move camera
                 camera = camera[0] - mouse_speed[0], camera[1] - mouse_speed[1]
 
+            # Right mouse button
+            if pressed_buttons[2]:
+                # Making an area of effect
+                if making_aoe is not None:
+                    making_aoe = make_aoe(making_aoe[0], mouse_pos, making_aoe[1], aoes, gridsize)
+
         display.fill(fog_color)
 
         display.blit(dnd_map, draw_position((0, 0), camera, gridsize, offset=map_offset))
+
+        draw_aoes(display, aoes, camera)
 
         if show_grid:
             draw_grid(display, camera, gridsize)

@@ -31,7 +31,7 @@ Create battlemaps for tabletop RPGs, like [D&D](https://www.dndbeyond.com/).
 ## Features
 
 - Infinite grid
-- Add and remove a "[fog of war](https://en.wikipedia.org/wiki/Fog_of_war)" effect
+- Add and remove a [fog of war](https://en.wikipedia.org/wiki/Fog_of_war) effect
 - Import maps from image files
 - Place, move and remove pieces on a grid (can be matched to image grid)
 - Place 1x1, 2x2, 3x3, or 4x4 pieces
@@ -59,6 +59,8 @@ arguments `--file=<filepath>` or `--gridsize=<size>` to change the opening param
 - Move a piece: `Click and drag: Left mouse button`
 - Move camera: `Click and drag: Middle mouse button`
 - Move background map: `ALT + Click and drag: Left mouse button`
+- Add Area of Effect: `CTRL + Click and drag: Right mouse button (change size)`
+- Remove Area of Effect: `CTRL + Shift + Double click: Right mouse button`
 - Zoom in: `Scroll wheel: Up`
 - Zoom out: `Scroll wheel: Down`
 - Select 1x1 piece placement: `1`
@@ -67,8 +69,8 @@ arguments `--file=<filepath>` or `--gridsize=<size>` to change the opening param
 - Select 4x4 piece placement: `4`
 - Show/hide fog: `F1`
 - Show/hide grid: `F12`
-- Save file: `CTRL + s`
-- Open file: `CTRL + o`
+- Save file: `CTRL + S`
+- Open file: `CTRL + O`
 - Quit program: `Esc`
 
 ## Known issues or lacking features
@@ -84,6 +86,8 @@ correct, save the file. There was some alignment issues with the background
 map when I tried adding this, so I skipped it for now. Might add later.
 
 There is no undo or redo. Might add later.
+
+There is no way to add pictures to pieces. Might add later.
 
 There is no way to mark/point on things on the map (apart from the mouse cursor).
 Might add later.

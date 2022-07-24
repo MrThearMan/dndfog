@@ -39,6 +39,11 @@ Create battlemaps for tabletop RPGs, like [D&D](https://www.dndbeyond.com/).
 
 ## How to use
 
+When installing from [pypi](https://pypi.org/), the library should come with a script
+named `dndfog` that you can run. It should be available in your environment if
+the `Python\Scripts` folder is set in PATH. You can also download an EXE from
+the [GitHub releases](https://github.com/MrThearMan/dndfog/releases).
+
 When the program opens, you need to select an image file to use as a background,
 or a JSON data file to load a map from. You can also lauch the program with extra
 arguments `--file=<filepath>` or `--gridsize=<size>` to change the opening parameters.
@@ -54,6 +59,8 @@ arguments `--file=<filepath>` or `--gridsize=<size>` to change the opening param
 - Move a piece: `Click and drag: Left mouse button`
 - Move camera: `Click and drag: Middle mouse button`
 - Move background map: `ALT + Click and drag: Left mouse button`
+- Add Area of Effect: `CTRL + Click and drag: Right mouse button (change size)`
+- Remove Area of Effect: `CTRL + Shift + Double click: Right mouse button`
 - Zoom in: `Scroll wheel: Up`
 - Zoom out: `Scroll wheel: Down`
 - Select 1x1 piece placement: `1`
@@ -62,8 +69,8 @@ arguments `--file=<filepath>` or `--gridsize=<size>` to change the opening param
 - Select 4x4 piece placement: `4`
 - Show/hide fog: `F1`
 - Show/hide grid: `F12`
-- Save file: `CTRL + s`
-- Open file: `CTRL + o`
+- Save file: `CTRL + S`
+- Open file: `CTRL + O`
 - Quit program: `Esc`
 
 ## Known issues or lacking features
@@ -79,6 +86,8 @@ correct, save the file. There was some alignment issues with the background
 map when I tried adding this, so I skipped it for now. Might add later.
 
 There is no undo or redo. Might add later.
+
+There is no way to add pictures to pieces. Might add later.
 
 There is no way to mark/point on things on the map (apart from the mouse cursor).
 Might add later.
