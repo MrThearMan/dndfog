@@ -99,12 +99,12 @@ class PieceData(TypedDict):
 
 
 class AreaOfEffectData(TypedDict):
-    origin: tuple[int, int]
+    origin: tuple[float, float]
     glow: Glow
 
 
 class AreaOfEffectSaveData(TypedDict):
-    origin: tuple[int, int]
+    origin: tuple[float, float]
     radius: int
     color: tuple[int, int, int, int]
 
@@ -117,7 +117,7 @@ class SaveData(TypedDict):
     pieces: list[PieceData]
     aoes: list[AreaOfEffectSaveData]
     camera: tuple[int, int]
-    map_offset: tuple[int, int]
+    map_offset: tuple[float, float]
     show_grid: bool
     show_fog: bool
 
@@ -128,9 +128,9 @@ class ImportData(NamedTuple):
     gridsize: int
     orig_gridsize: int
     camera: tuple[int, int]
-    map_offset: tuple[int, int]
+    map_offset: tuple[float, float]
     pieces: dict[tuple[int, int], PieceData]
-    aoes: dict[tuple[int, int], AreaOfEffectData]
+    aoes: dict[tuple[float, float], AreaOfEffectData]
     removed_fog: set[tuple[int, int]]
     colors: list[tuple[int, int, int]]
     show_grid: bool
@@ -269,9 +269,12 @@ def draw_position(
     pos: tuple[int | float, int | float],
     camera: tuple[int, int],
     gridsize: int,
-    offset: tuple[int, int] = (0, 0),
+    offset: tuple[float, float] = (0, 0),
 ) -> tuple[int, int]:
-    return (pos[0] * gridsize) - camera[0] - offset[0], (pos[1] * gridsize) - camera[1] - offset[1]
+    return (
+        int((pos[0] * gridsize) - camera[0] - (offset[0] * gridsize)),
+        int((pos[1] * gridsize) - camera[1] - (offset[1] * gridsize)),
+    )
 
 
 def grid_position(
@@ -369,7 +372,7 @@ def save_data_file(
     zoom: tuple[int, int],
     map_offset: tuple[int, int],
     pieces: dict[tuple[int, int], PieceData],
-    aoes: dict[tuple[int, int], AreaOfEffectData],
+    aoes: dict[tuple[float, float], AreaOfEffectData],
     removed_fog: set[tuple[int, int]],
     show_grid: bool,
     show_fog: bool,
@@ -494,13 +497,18 @@ def draw_pieces(
 
 def draw_aoes(
     display: pygame.Surface,
-    aoes: dict[tuple[int, int], AreaOfEffectData],
+    aoes: dict[tuple[float, float], AreaOfEffectData],
     camera: tuple[int, int],
+    gridsize: int,
 ) -> None:
     for (x, y), aoe_data in aoes.items():
         glow = next(aoe_data["glow"])
         size = glow.get_size()
-        display.blit(glow, (x - (size[0] // 2) - camera[0], y - (size[1] // 2) - camera[1]))
+        gsx, gsy = (size[0] / gridsize) / 2, (size[1] / gridsize) / 2
+
+        dest = draw_position((x - gsx, y - gsy), camera, gridsize)
+
+        display.blit(glow, dest)
 
 
 def add_piece(
@@ -590,57 +598,117 @@ def move_piece(
 
 def add_aoe(
     mouse_pos: tuple[int, int],
-    aoes: dict[tuple[int, int], AreaOfEffectData],
+    aoes: dict[tuple[float, float], AreaOfEffectData],
+    camera: tuple[int, int],
     gridsize: int,
-) -> tuple[tuple[int, int], AreaOfEffectData]:
+) -> tuple[tuple[float, float], AreaOfEffectData] | None:
+    aoe_pos = round((mouse_pos[0] + camera[0]) / gridsize, 2), round((mouse_pos[1] + camera[1]) / gridsize, 2)
     color = pygame.Color(randint(0, 255), randint(0, 255), randint(0, 255), 100)
-    aoes[mouse_pos] = AreaOfEffectData(
-        origin=mouse_pos,
-        glow=Glow(radius_range=range(gridsize, gridsize - 1, -1), inner_color=color, outer_color=color),
+    radius = gridsize // 2
+    aoes[aoe_pos] = AreaOfEffectData(
+        origin=aoe_pos,
+        glow=Glow(
+            radius_range=range(radius, radius - 1, -1),
+            inner_color=color,
+            outer_color=color,
+        ),
     )
-    return mouse_pos, aoes[mouse_pos]
+    return aoe_pos, aoes[aoe_pos]
 
 
 def make_aoe(
-    origin: tuple[int, int],
+    origin: tuple[float, float],
     mouse_pos: tuple[int, int],
+    camera: tuple[int, int],
     aoe: AreaOfEffectData,
-    aoes: dict[tuple[int, int], AreaOfEffectData],
+    aoes: dict[tuple[float, float], AreaOfEffectData],
     gridsize: int,
-) -> tuple[tuple[int, int], AreaOfEffectData]:
+) -> tuple[tuple[float, float], AreaOfEffectData] | None:
 
-    making_aoe = origin, aoe
-    dist = int(sqrt(((origin[0] - mouse_pos[0]) ** 2) + ((origin[1] - mouse_pos[1]) ** 2)))
-    radius = max(dist, gridsize)
+    aoe_pos = aoe["origin"]
+    making_aoe = aoe_pos, aoe
+    dist = int(
+        sqrt(
+            (((origin[0] * gridsize) - (mouse_pos[0] + camera[0])) ** 2)
+            + (((origin[1] * gridsize) - (mouse_pos[1] + camera[1])) ** 2)
+        )
+    )
+    radius = max(dist, gridsize // 2)
 
     if radius != 0:
-        aoes[origin] = AreaOfEffectData(
-            origin=origin,
+        aoes[aoe_pos] = AreaOfEffectData(
+            origin=aoe_pos,
             glow=Glow(
                 radius_range=range(radius, radius - 1, -1),
                 inner_color=aoe["glow"].inner_color,
                 outer_color=aoe["glow"].outer_color,
             ),
         )
-        making_aoe = origin, aoes[origin]
+        making_aoe = aoe_pos, aoes[aoe_pos]
 
     return making_aoe
 
 
 def remove_aoe(
     mouse_pos: tuple[int, int],
-    aoes: dict[tuple[int, int], AreaOfEffectData],
+    camera: tuple[int, int],
+    aoes: dict[tuple[float, float], AreaOfEffectData],
+    gridsize: int,
 ) -> None:
-    to_remove: set[tuple[int, int]] = set()
+    to_remove: set[tuple[float, float]] = set()
     for origin, aoe_data in aoes.items():
         radius = aoe_data["glow"].radius
-        dist = sqrt(((origin[0] - mouse_pos[0]) ** 2) + ((origin[1] - mouse_pos[1]) ** 2))
+        dist = sqrt(
+            (((origin[0] * gridsize) - (mouse_pos[0] + camera[0])) ** 2)
+            + (((origin[1] * gridsize) - (mouse_pos[1] + camera[1])) ** 2)
+        )
 
         if dist <= radius:
             to_remove.add(origin)
 
     for origin in to_remove:
         aoes.pop(origin, None)
+
+
+def scale_camera(
+    camera: tuple[int, int],
+    mouse_pos: tuple[int, int],
+    gridsize: int,
+    old_gridsize: int,
+) -> tuple[int, int]:
+    camera_delta = zoom_at_mouse_pos(mouse_pos, camera, old_gridsize, gridsize)
+    camera = camera[0] - camera_delta[0], camera[1] - camera_delta[1]
+    return camera
+
+
+def scale_aoes(
+    aoes: dict[tuple[float, float], AreaOfEffectData],
+    new_gridsize: int,
+    old_gridsize: int,
+) -> None:
+    for place, aoe in aoes.items():
+        cur_radius = aoes[place]["glow"].radius
+        rel_grid_radius = round(cur_radius / old_gridsize, 2)
+        new_radius = max(int(rel_grid_radius * new_gridsize), max(new_gridsize // 2, 1))
+
+        aoes[place]["glow"] = Glow(
+            radius_range=range(new_radius, new_radius - 1, -1),
+            inner_color=aoe["glow"].inner_color,
+            outer_color=aoe["glow"].outer_color,
+        )
+
+
+def scale_map(
+    current_map_size: tuple[int, int],
+    new_gridsize: int,
+    old_gridsize: int,
+    orig_dnd_map: pygame.Surface,
+) -> pygame.Surface:
+    cur_x, cur_y = current_map_size
+    rel_x, rel_y = cur_x / old_gridsize, cur_y / old_gridsize
+    new_x, new_y = max(round(rel_x * new_gridsize), 1), max(round(rel_y * new_gridsize), 1)
+    dnd_map = pygame.transform.scale(orig_dnd_map, (new_x, new_y))
+    return dnd_map
 
 
 def main(map_file: str, gridsize: int) -> None:
@@ -669,7 +737,7 @@ def main(map_file: str, gridsize: int) -> None:
     orig_gridsize = gridsize
     removed_fog: set[tuple[int, int]] = set()
     pieces: dict[tuple[int, int], PieceData] = {}
-    aoes: dict[tuple[int, int], AreaOfEffectData] = {}
+    aoes: dict[tuple[float, float], AreaOfEffectData] = {}
     camera = (0, 0)
     show_grid = False
     show_fog = False
@@ -781,11 +849,10 @@ def main(map_file: str, gridsize: int) -> None:
                 old_gridsize = gridsize
                 if gridsize + event.y > 0:
                     gridsize = gridsize + event.y
-                    camera_delta = zoom_at_mouse_pos(mouse_pos, camera, old_gridsize, gridsize)
-                    camera = camera[0] - camera_delta[0], camera[1] - camera_delta[1]
-                    scale = gridsize / orig_gridsize
-                    dnd_map_size = orig_dnd_map.get_size()
-                    dnd_map = pygame.transform.scale(orig_dnd_map, (dnd_map_size[0] * scale, dnd_map_size[1] * scale))
+                    scale_aoes(aoes, gridsize, old_gridsize)
+                    camera = scale_camera(camera, mouse_pos, gridsize, old_gridsize)
+                    if not pressed_modifiers & pygame.KMOD_ALT:
+                        dnd_map = scale_map(dnd_map.get_size(), gridsize, old_gridsize, orig_dnd_map)
 
             if event.type == pygame.MOUSEBUTTONDOWN:
 
@@ -805,7 +872,7 @@ def main(map_file: str, gridsize: int) -> None:
 
                         # Remove aoe
                         if pressed_modifiers & pygame.KMOD_CTRL and pressed_modifiers & pygame.KMOD_SHIFT:
-                            remove_aoe(mouse_pos, aoes)
+                            remove_aoe(mouse_pos, camera, aoes, gridsize)
 
                         # Remove piece
                         else:
@@ -813,7 +880,7 @@ def main(map_file: str, gridsize: int) -> None:
 
                     # Add area of effect
                     elif pressed_modifiers & pygame.KMOD_CTRL and not pressed_modifiers & pygame.KMOD_SHIFT:
-                        making_aoe = add_aoe(mouse_pos, aoes, gridsize)
+                        making_aoe = add_aoe(mouse_pos, aoes, camera, gridsize)
 
                     # Add a piece
                     elif not any(pressed_modifiers & mod for mod in modifiers):
@@ -843,7 +910,10 @@ def main(map_file: str, gridsize: int) -> None:
                 else:
                     # Move map
                     if pressed_modifiers & pygame.KMOD_ALT:
-                        map_offset = map_offset[0] - mouse_speed[0], map_offset[1] - mouse_speed[1]
+                        map_offset = (
+                            max(min(round(map_offset[0] - (mouse_speed[0] / gridsize), 2), 1.1), -0.1),
+                            max(min(round(map_offset[1] - (mouse_speed[1] / gridsize), 2), 1.1), -0.1),
+                        )
 
                     # Add and remove fog
                     if pressed_modifiers & pygame.KMOD_CTRL:
@@ -861,13 +931,13 @@ def main(map_file: str, gridsize: int) -> None:
             if pressed_buttons[2]:
                 # Making an area of effect
                 if making_aoe is not None:
-                    making_aoe = make_aoe(making_aoe[0], mouse_pos, making_aoe[1], aoes, gridsize)
+                    making_aoe = make_aoe(making_aoe[0], mouse_pos, camera, making_aoe[1], aoes, gridsize)
 
         display.fill(fog_color)
 
         display.blit(dnd_map, draw_position((0, 0), camera, gridsize, offset=map_offset))
 
-        draw_aoes(display, aoes, camera)
+        draw_aoes(display, aoes, camera, gridsize)
 
         if show_grid:
             draw_grid(display, camera, gridsize)
@@ -883,7 +953,8 @@ def main(map_file: str, gridsize: int) -> None:
 
 def start() -> None:
     parser = ArgumentParser()
-    parser.add_argument("--file", default=None)
+    default = "C:\\Users\\lampp\\PythonProjects\\dndfog\\tests\\map\\Old-Owl-Well.png"
+    parser.add_argument("--file", default=default)
     parser.add_argument("--gridsize", default=36)
     args = parser.parse_args()
 

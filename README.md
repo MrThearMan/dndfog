@@ -6,6 +6,7 @@
 [![GitHub][licence-badge]][licence]
 [![GitHub Last Commit][repo-badge]][repo]
 [![GitHub Issues][issues-badge]][issues]
+[![Downloads][downloads-badge]][pypi]
 [![Python Version][version-badge]][pypi]
 
 ```shell
@@ -35,6 +36,7 @@ Create battlemaps for tabletop RPGs, like [D&D](https://www.dndbeyond.com/).
 - Import maps from image files
 - Place, move and remove pieces on a grid (can be matched to image grid)
 - Place 1x1, 2x2, 3x3, or 4x4 pieces
+- Place and remove [AOE's](https://en.wikipedia.org/wiki/Area_of_effect)
 - Save and load file to JSON files (background image saved in the JSON file!)
 
 ## How to use
@@ -59,10 +61,12 @@ arguments `--file=<filepath>` or `--gridsize=<size>` to change the opening param
 - Move a piece: `Click and drag: Left mouse button`
 - Move camera: `Click and drag: Middle mouse button`
 - Move background map: `ALT + Click and drag: Left mouse button`
-- Add Area of Effect: `CTRL + Click and drag: Right mouse button (change size)`
-- Remove Area of Effect: `CTRL + Shift + Double click: Right mouse button`
+- Add AOE: `CTRL + Click and drag: Right mouse button (change size)`
+- Remove AOE: `CTRL + Shift + Double click: Right mouse button`
 - Zoom in: `Scroll wheel: Up`
 - Zoom out: `Scroll wheel: Down`
+- Increase gridsize: `ALT + Scroll wheel: Up`
+- Decrease gridsize: `ALT + Scroll wheel: Down`
 - Select 1x1 piece placement: `1`
 - Select 2x2 piece placement: `2`
 - Select 3x3 piece placement: `3`
@@ -75,22 +79,19 @@ arguments `--file=<filepath>` or `--gridsize=<size>` to change the opening param
 
 ## Known issues or lacking features
 
-When zooming, the program grid and background map might not stay aligned,
-if you have moved the background map. This is due to the background map offset
-not being scaled correctly to the new zoom level. Usually this should be only
-a few pixels, and you can fix it quickly by moving the background.
+- When zooming, the program grid and background map might not stay aligned,
+  if you have moved the background map. This is due to the background map offset
+  not being scaled correctly to the new zoom level. Usually this should be only
+  a few pixels, and you can fix it quickly by moving the background.
 
-Gridsize can only be changed on initial lauch. Use the `--gridsize=<size>`
-extra argument on first lauch to change the grid size, and when you get it
-correct, save the file. There was some alignment issues with the background
-map when I tried adding this, so I skipped it for now. Might add later.
-
-There is no undo or redo. Might add later.
-
-There is no way to add pictures to pieces. Might add later.
-
-There is no way to mark/point on things on the map (apart from the mouse cursor).
-Might add later.
+- Matching program gridsize to background gridsize is a bit awkward. You can either
+  use the `--gridsize=<size>` extra argument on lauch, or change it with
+  `ALT + Scroll wheel`, but there is bound to be some misalignment that you have to
+  correct by moving the background.
+- AOEs might do not stay the correct size when zooming back and forth.
+- There is no undo or redo.
+- There is no way to add pictures to pieces.
+- There is no way to mark/point on things on the map (apart from the mouse cursor).
 
 [coverage-badge]: https://coveralls.io/repos/github/MrThearMan/dndfog/badge.svg?branch=main
 [status-badge]: https://img.shields.io/github/workflow/status/MrThearMan/dndfog/Test
@@ -99,7 +100,6 @@ Might add later.
 [repo-badge]: https://img.shields.io/github/last-commit/MrThearMan/dndfog
 [issues-badge]: https://img.shields.io/github/issues-raw/MrThearMan/dndfog
 [version-badge]: https://img.shields.io/pypi/pyversions/dndfog
-[loc-badge]: https://img.shields.io/tokei/lines/github.com/MrThearMan/dndfog
 [downloads-badge]: https://img.shields.io/pypi/dm/dndfog
 
 [coverage]: https://coveralls.io/github/MrThearMan/dndfog?branch=main
