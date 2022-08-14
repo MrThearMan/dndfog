@@ -957,8 +957,7 @@ def main(map_file: str, gridsize: int) -> None:
 
 def start() -> None:
     parser = ArgumentParser()
-    default = "C:\\Users\\lampp\\PythonProjects\\dndfog\\tests\\map\\Old-Owl-Well.png"
-    parser.add_argument("--file", default=default)
+    parser.add_argument("--file", default=None)
     parser.add_argument("--gridsize", default=36)
     args = parser.parse_args()
 
