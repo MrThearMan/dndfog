@@ -93,6 +93,7 @@ class BackgroundImage(TypedDict):
 
 class PieceData(TypedDict):
     place: tuple[int, int]
+    parent: tuple[int, int]
     color: tuple[int, int, int]
     size: int
     show: bool
@@ -421,6 +422,7 @@ def open_data_file(openpath: str) -> ImportData:
     removed_fog = set((x, y) for x, y in data["removed_fog"])
     pieces = {
         tuple(piece["place"]): PieceData(
+            parent=tuple(piece["parent"]),
             place=tuple(piece["place"]),
             color=tuple(piece["color"]),
             size=int(piece["size"]),
@@ -532,7 +534,8 @@ def add_piece(
         for x in range(selected_size):
             for y in range(selected_size):
                 pieces[(add_place[0] + x, add_place[1] + y)] = PieceData(
-                    place=add_place,
+                    parent=add_place,
+                    place=(add_place[0] + x, add_place[1] + y),
                     color=color,
                     size=selected_size,
                     show=(x == 0 and y == 0),
@@ -546,7 +549,7 @@ def remove_piece(
 ) -> None:
     piece_data: PieceData | None = pieces.get(next_place, None)
     if piece_data is not None:
-        place = piece_data["place"]
+        place = piece_data["parent"]
         size = piece_data["size"]
         color = piece_data["color"]
 
@@ -563,7 +566,7 @@ def move_piece(
     piece_to_move: PieceData,
     pieces: dict[tuple[int, int], PieceData],
 ) -> tuple[tuple[int, int], PieceData]:
-    piece_place = piece_to_move["place"]
+    piece_place = piece_to_move["parent"]
     piece_size = piece_to_move["size"]
 
     movement = (next_place[0] - current_place[0], next_place[1] - current_place[1])
@@ -585,7 +588,8 @@ def move_piece(
         # Add own positions back
         for self_pos in current_self_positions:
             pieces[(self_pos[0] + movement[0], self_pos[1] + movement[1])] = PieceData(
-                place=(piece_place[0] + movement[0], piece_place[1] + movement[1]),
+                parent=(piece_place[0] + movement[0], piece_place[1] + movement[1]),
+                place=(self_pos[0] + movement[0], self_pos[1] + movement[1]),
                 color=piece_to_move["color"],
                 size=piece_size,
                 show=(self_pos[0] == piece_place[0] and self_pos[1] == piece_place[1]),
@@ -738,7 +742,7 @@ def main(map_file: str, gridsize: int) -> None:
     removed_fog: set[tuple[int, int]] = set()
     pieces: dict[tuple[int, int], PieceData] = {}
     aoes: dict[tuple[float, float], AreaOfEffectData] = {}
-    camera = (0, 0)
+    camera: tuple[int, int] = (0, 0)
     show_grid = False
     show_fog = False
 
