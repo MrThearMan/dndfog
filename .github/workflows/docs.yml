@@ -7,43 +7,11 @@ on:
     paths:
       - "docs/**"
       - "mkdocs.yml"
-
-env:
-  POETRY_VIRTUALENVS_IN_PROJECT: true
-  POETRY_NO_INTERACTION: 1
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - ".github/workflows/docs.yml"
+  workflow_dispatch:
 
 jobs:
-  submit-docs:
-    runs-on: windows-latest
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v3
-
-      - name: Set up python
-        id: setup-python
-        uses: actions/setup-python@v3
-        with:
-          python-version: "3.10"
-
-      - name: Set up poetry
-        uses: abatilo/actions-poetry@v2.1.4
-        with:
-          poetry-version: "1.1.13"
-
-      - name: Load cached venv
-        id: cache-venv
-        uses: actions/cache@v3
-        with:
-          path: .venv
-          key: ${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}-docs-v1
-
-      - name: Install dependencies
-        if: steps.cache-venv.outputs.cache-hit != 'true'
-        run: poetry install --no-root
-
-      - name: Install project
-        run: poetry install
-
-      - name: Deploy docs
-        run: poetry run mkdocs gh-deploy --force --strict --verbose
+  docs:
+    uses: MrThearMan/CI/.github/workflows/docs.yml@v0.2.2
+    with:
+      os: "windows-latest"

@@ -1,6 +1,5 @@
 # DnD Fog
 
-[![Coverage Status][coverage-badge]][coverage]
 [![GitHub Workflow Status][status-badge]][status]
 [![PyPI][pypi-badge]][pypi]
 [![GitHub][licence-badge]][licence]
@@ -93,8 +92,7 @@ arguments `--file=<filepath>` or `--gridsize=<size>` to change the opening param
 - There is no way to add pictures to pieces.
 - There is no way to mark/point on things on the map (apart from the mouse cursor).
 
-[coverage-badge]: https://coveralls.io/repos/github/MrThearMan/dndfog/badge.svg?branch=main
-[status-badge]: https://img.shields.io/github/workflow/status/MrThearMan/dndfog/Test
+[status-badge]: https://img.shields.io/github/actions/workflow/status/MrThearMan/dndfog/test.yml?branch=main
 [pypi-badge]: https://img.shields.io/pypi/v/dndfog
 [licence-badge]: https://img.shields.io/github/license/MrThearMan/dndfog
 [repo-badge]: https://img.shields.io/github/last-commit/MrThearMan/dndfog
@@ -102,7 +100,6 @@ arguments `--file=<filepath>` or `--gridsize=<size>` to change the opening param
 [version-badge]: https://img.shields.io/pypi/pyversions/dndfog
 [downloads-badge]: https://img.shields.io/pypi/dm/dndfog
 
-[coverage]: https://coveralls.io/github/MrThearMan/dndfog?branch=main
 [status]: https://github.com/MrThearMan/dndfog/actions/workflows/test.yml
 [pypi]: https://pypi.org/project/dndfog
 [licence]: https://github.com/MrThearMan/dndfog/blob/main/LICENSE

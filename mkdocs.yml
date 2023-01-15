@@ -21,7 +21,7 @@ markdown_extensions:
 plugins:
   - search:
   - mermaid2:
-      version: 8.13.3
+      version: 9.3.0
 
 extra_css:
   - css/docs.css
