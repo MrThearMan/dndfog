@@ -17,3 +17,5 @@ jobs:
     with:
       python-version: '["3.10"]'
       os: '["windows-latest"]'
+      submit-python-version: "3.10"
+      submit-os: "windows-latest"
