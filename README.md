@@ -86,6 +86,9 @@ arguments `--file=<filepath>` or `--gridsize=<size>` to change the opening param
 - Confirm if want to exit with esc
 - Button to show keyboard bindings
 - Turn order tracking
+- Layers for fog
+- Bigger removing size for fog
+- Select tool form pallette
 - Matching program gridsize to background gridsize is a bit awkward. You can either
   use the `--gridsize=<size>` extra argument on lauch, or change it with
   `ALT + Scroll wheel`, but there is bound to be some misalignment that you have to
