@@ -14,12 +14,12 @@ repos:
             "--markdown-linebreak-ext=md"
             ]
 
+-   repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.0.237
+    hooks:
+    -   id: ruff
+
 -   repo: https://github.com/ambv/black
     rev: 22.12.0
     hooks:
     -   id: black
-
--   repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.0.222
-    hooks:
-    -   id: ruff
