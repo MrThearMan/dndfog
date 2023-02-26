@@ -17,7 +17,6 @@ def draw_grid(
     gridsize: int,
     color: tuple[int, int, int] = (0xC5, 0xC5, 0xC5),
 ) -> None:
-
     width, height = display.get_size()
 
     start_x, start_y, end_x, end_y = get_visible_area_limits(display, camera, gridsize)
@@ -36,7 +35,6 @@ def draw_fog(
     removed: set[tuple[int, int]],
     fog_color: tuple[int, int, int],
 ) -> None:
-
     start_x, start_y, end_x, end_y = get_visible_area_limits(display, camera, gridsize)
     start_x, start_y, end_x, end_y = start_x // gridsize, start_y // gridsize, end_x // gridsize, end_y // gridsize
 
@@ -221,7 +219,6 @@ def make_aoe(
     aoes: dict[tuple[float, float], AreaOfEffectData],
     gridsize: int,
 ) -> tuple[tuple[float, float], AreaOfEffectData] | None:
-
     aoe_pos = aoe["origin"]
     making_aoe = aoe_pos, aoe
     dist = int(
@@ -371,14 +368,12 @@ def main(map_file: str, gridsize: int) -> None:  # noqa: C901
         mouse_speed = pygame.mouse.get_rel()
 
         for event in pygame.event.get():
-
             # Quit
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 pygame.quit()
                 sys.exit()
 
             if event.type == pygame.KEYDOWN:
-
                 # Save data
                 if pressed_modifiers & pygame.KMOD_CTRL and event.key == pygame.K_s:
                     save_data_file(
@@ -452,7 +447,6 @@ def main(map_file: str, gridsize: int) -> None:  # noqa: C901
                         dnd_map = scale_map(dnd_map.get_size(), gridsize, old_gridsize, orig_dnd_map)
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-
                 # Start moving a piece
                 if event.button == pygame.BUTTON_LEFT and not any(pressed_modifiers & mod for mod in modifiers):
                     next_place = grid_position((mouse_pos[0], mouse_pos[1]), camera, gridsize)

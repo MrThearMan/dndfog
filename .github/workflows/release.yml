@@ -9,7 +9,7 @@ jobs:
   release:
     uses: MrThearMan/CI/.github/workflows/release.yml@v0.3.0
     with:
-      python-version: "3.10"
+      python-version: "3.11"
       os: "windows-latest"
     secrets:
       pypi-token: ${{ secrets.PYPI_API_TOKEN }}

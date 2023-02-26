@@ -35,7 +35,6 @@ def zoom_at_mouse_pos(
     old_gridsize: int,
     new_gridsize: int,
 ) -> tuple[int, int]:
-
     absolute_mouse_position = mouse_position[0] + camera[0], mouse_position[1] + camera[1]
 
     old_grid_place = absolute_mouse_position[0] / old_gridsize, absolute_mouse_position[1] / old_gridsize
