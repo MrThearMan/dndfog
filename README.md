@@ -83,17 +83,12 @@ arguments `--file=<filepath>` or `--gridsize=<size>` to change the opening param
   not being scaled correctly to the new zoom level. Usually this should be only
   a few pixels, and you can fix it quickly by moving the background.
 
-- Confirm if want to exit with esc
-- Button to show keyboard bindings
+- Cut grid size in half / double gridsize
 - Turn order tracking
 - Layers for fog
-- Bigger removing size for fog
-- Select tool form pallette
-- Matching program gridsize to background gridsize is a bit awkward. You can either
-  use the `--gridsize=<size>` extra argument on lauch, or change it with
+- Matching program gridsize to background gridsize is a bit awkward. You can change it with
   `ALT + Scroll wheel`, but there is bound to be some misalignment that you have to
   correct by moving the background.
-- AOEs might do not stay the correct size when zooming back and forth.
 - There is no undo or redo.
 - There is no way to add pictures to pieces.
 - There is no way to mark/point on things on the map (apart from the mouse cursor).

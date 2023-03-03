@@ -10,12 +10,10 @@ from win32con import OFN_ALLOWMULTISELECT, OFN_EXPLORER
 from win32gui import GetOpenFileNameW, GetSaveFileNameW
 
 from dndfog.types import (
-    AreaOfEffectData,
-    AreaOfEffectSaveData,
     BackgroundImage,
-    Glow,
-    ImportData,
     PieceData,
+    PieceSize,
+    ProgramState,
     SaveData,
     orig_colors,
 )
@@ -26,6 +24,18 @@ __all__ = [
     "open_data_file",
     "save_data_file",
 ]
+
+
+def load_map(start_file: str, state: ProgramState) -> None:
+    # Load data file
+    if start_file[-5:] == ".json":
+        open_data_file(start_file, state)
+
+    # Load background image
+    else:
+        state.map.image = pygame.image.load(start_file).convert_alpha()
+        state.map.image.set_colorkey((255, 255, 255))
+        state.map.original_image = state.map.image.copy()
 
 
 def open_file_dialog(
@@ -140,104 +150,54 @@ def save_file_dialog(
             raise IOError() from e
 
 
-def save_data_file(
-    orig_dnd_map: pygame.Surface,
-    gridsize: int,
-    orig_gridsize: int,
-    camera: tuple[int, int],
-    zoom: tuple[int, int],
-    map_offset: tuple[int, int],
-    pieces: dict[tuple[int, int], PieceData],
-    aoes: dict[tuple[float, float], AreaOfEffectData],
-    removed_fog: set[tuple[int, int]],
-    show_grid: bool,
-    show_fog: bool,
-) -> None:
-    savepath = save_file_dialog(
-        title="Save Map",
-        ext=[("Json file", "json")],
-        default_ext="json",
-    )
+def save_data_file(state: ProgramState) -> None:
+    savepath = save_file_dialog(title="Save Map", ext=[("Json file", "json")], default_ext="json")
     if savepath:
         data = SaveData(
-            gridsize=gridsize,
-            orig_gridsize=orig_gridsize,
-            removed_fog=list(removed_fog),
+            gridsize=state.map.gridsize,
+            removed_fog=list(state.map.removed_fog),
             background=BackgroundImage(
-                img=serialize_map(orig_dnd_map),
-                size=orig_dnd_map.get_size(),
+                img=serialize_map(state.map.original_image),
+                size=state.map.original_image.get_size(),
                 mode="RGBA",
-                zoom=zoom,
+                zoom=state.map.image.get_size(),
             ),
-            pieces=list(pieces.values()),
-            aoes=[
-                AreaOfEffectSaveData(
-                    origin=aoe["origin"],
-                    radius=aoe["glow"].radius,
-                    color=aoe["glow"].color,
-                )
-                for aoe in aoes.values()
-            ],
-            camera=camera,
-            map_offset=map_offset,
-            show_grid=show_grid,
-            show_fog=show_fog,
+            pieces=list(state.map.pieces.values()),
+            camera=state.map.camera,
+            map_offset=state.map.image_offset,
+            show_grid=state.show.grid,
+            show_fog=state.show.fog,
         )
 
         with open(savepath, "w") as f:
             json.dump(data, f, indent=2)
 
 
-def open_data_file(openpath: str) -> ImportData:
+def open_data_file(openpath: str, state: ProgramState) -> None:
     with open(openpath, "r") as f:
         data: SaveData = json.load(f)
 
-    gridsize = int(data["gridsize"])
-    orig_gridsize = int(data["orig_gridsize"])
-    removed_fog = {(x, y) for x, y in data["removed_fog"]}
-    pieces = {
+    state.map.gridsize = int(data["gridsize"])
+    state.map.removed_fog = {(x, y) for x, y in data["removed_fog"]}
+    state.map.pieces = {
         tuple(piece["place"]): PieceData(
             parent=tuple(piece["parent"]),
             place=tuple(piece["place"]),
             color=tuple(piece["color"]),
-            size=int(piece["size"]),
+            size=PieceSize(int(piece["size"])),
             show=piece["show"],
         )
         for piece in data["pieces"]
     }
-    aoes = {
-        tuple(aoe["origin"]): AreaOfEffectData(
-            origin=tuple(aoe["origin"]),
-            glow=Glow(
-                radius_range=range(aoe["radius"], aoe["radius"] - 1, -1),
-                inner_color=pygame.Color(*aoe["color"]),
-                outer_color=pygame.Color(*aoe["color"]),
-            ),
-        )
-        for aoe in data["aoes"] or {}
-    }
-    orig_dnd_map = deserialize_map(data)
-    dnd_map = pygame.transform.scale(orig_dnd_map, data["background"]["zoom"])
-    camera = tuple(data["camera"])
-    map_offset = tuple(data["map_offset"])
-    colors = [color for color in orig_colors if color not in {piece["color"] for piece in pieces.values()}]
-    show_grid = data["show_grid"]
-    show_fog = data["show_fog"]
-
-    return ImportData(
-        dnd_map=dnd_map,
-        orig_dnd_map=orig_dnd_map,
-        gridsize=gridsize,
-        orig_gridsize=orig_gridsize,
-        camera=camera,
-        map_offset=map_offset,
-        pieces=pieces,
-        aoes=aoes,
-        removed_fog=removed_fog,
-        colors=colors,
-        show_grid=show_grid,
-        show_fog=show_fog,
-    )
+    state.map.original_image = deserialize_map(data)
+    state.map.image = pygame.transform.scale(state.map.original_image, data["background"]["zoom"])
+    state.map.camera = tuple(data["camera"])
+    state.map.image_offset = tuple(data["map_offset"])
+    state.colors = [
+        color for color in orig_colors if color not in {piece["color"] for piece in state.map.pieces.values()}
+    ]
+    state.show.grid = data["show_grid"]
+    state.show.fog = data["show_fog"]
 
 
 def serialize_map(surface: pygame.Surface) -> str:

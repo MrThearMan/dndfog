@@ -1,8 +1,14 @@
 import copy
+from dataclasses import dataclass, field
+from enum import Enum
 from itertools import cycle
-from typing import NamedTuple, TypedDict
+from typing import NamedTuple, Protocol, TypeAlias, TypedDict
 
 import pygame
+
+pygame.font.init()
+font = pygame.font.SysFont("arial", 16)
+
 
 orig_colors = [
     (255, 0, 0),  # red
@@ -20,6 +26,34 @@ orig_colors = [
     (220, 180, 255),  # lavender
     (253, 133, 105),  # peach
 ]
+
+
+class KeyEvent(Protocol):
+    key: int
+    mod: int
+    unicode: str
+    scancode: int
+    type: int
+
+
+class MouseButtonEvent(Protocol):
+    pos: tuple[int, int]
+    button: int
+    touch: bool
+    type: int
+
+
+class MouseWheelEvent(Protocol):
+    x: int
+    y: int
+    precise_x: float
+    precise_y: float
+    touch: bool
+    flipped: bool
+    type: int
+
+
+Event: TypeAlias = KeyEvent | MouseButtonEvent | MouseWheelEvent
 
 
 class Glow:
@@ -91,6 +125,31 @@ class Glow:
         return glow
 
 
+class PieceSize(int, Enum):
+    small = 1
+    medium = 2
+    large = 3
+    giant = 4
+
+
+class FogSize(int, Enum):
+    small = 1
+    medium = 2
+    large = 3
+    giant = 4
+
+
+class PieceData(TypedDict):
+    place: tuple[int, int]
+    parent: tuple[int, int]
+    color: tuple[int, int, int]
+    size: PieceSize
+    show: bool
+
+
+Pieces: TypeAlias = dict[tuple[int, int], PieceData]
+
+
 class BackgroundImage(TypedDict):
     img: str
     size: tuple[int, int]
@@ -98,48 +157,67 @@ class BackgroundImage(TypedDict):
     zoom: tuple[int, int]
 
 
-class PieceData(TypedDict):
-    place: tuple[int, int]
-    parent: tuple[int, int]
-    color: tuple[int, int, int]
-    size: int
-    show: bool
-
-
-class AreaOfEffectData(TypedDict):
-    origin: tuple[float, float]
-    glow: Glow
-
-
-class AreaOfEffectSaveData(TypedDict):
-    origin: tuple[float, float]
-    radius: int
-    color: tuple[int, int, int, int]
-
-
 class SaveData(TypedDict):
     gridsize: int
-    orig_gridsize: int
     removed_fog: list[tuple[int, int]]
     background: BackgroundImage
     pieces: list[PieceData]
-    aoes: list[AreaOfEffectSaveData]
     camera: tuple[int, int]
     map_offset: tuple[float, float]
     show_grid: bool
     show_fog: bool
 
 
-class ImportData(NamedTuple):
-    dnd_map: pygame.Surface
-    orig_dnd_map: pygame.Surface
-    gridsize: int
-    orig_gridsize: int
-    camera: tuple[int, int]
-    map_offset: tuple[float, float]
-    pieces: dict[tuple[int, int], PieceData]
-    aoes: dict[tuple[float, float], AreaOfEffectData]
-    removed_fog: set[tuple[int, int]]
-    colors: list[tuple[int, int, int]]
-    show_grid: bool
-    show_fog: bool
+class Tool(int, Enum):
+    piece = 0
+    fog = 1
+    map = 2
+    grid = 3
+
+    @classmethod
+    def values(cls):
+        return cls._value2member_map_.keys()
+
+
+@dataclass
+class Show:
+    grid: bool = False
+    fog: bool = False
+    toolbar: bool = False
+
+
+@dataclass
+class Selected:
+    tool: Tool = Tool.piece
+    size: PieceSize = PieceSize.small
+    piece: tuple[int, int] | None = None
+    fog: FogSize = FogSize.small
+
+
+@dataclass
+class MapData:
+    image: pygame.Surface | None = None
+    original_image: pygame.Surface | None = None
+    image_offset: tuple[float, float] = (0, 0)
+    pieces: Pieces = field(default_factory=dict)
+    removed_fog: set[tuple[int, int]] = field(default_factory=set)
+    fog_color: tuple[int, int, int] = (0xCC, 0xCC, 0xCC)
+    grid_color: tuple[int, int, int] = (0xC5, 0xC5, 0xC5)
+    camera: tuple[int, int] = (0, 0)
+    gridsize: int = 36
+
+
+@dataclass
+class ProgramState:
+    show: Show = field(default_factory=Show)
+    selected: Selected = field(default_factory=Selected)
+    colors: list[tuple[int, int, int]] = field(default_factory=orig_colors.copy)
+    map: MapData = field(default_factory=MapData)
+
+
+class LoopData(NamedTuple):
+    mouse_pos: tuple[int, int]
+    grid_pos: tuple[int, int]
+    mouse_speed: tuple[int, int]
+    pressed_modifiers: int
+    pressed_buttons: tuple[bool, bool, bool]
