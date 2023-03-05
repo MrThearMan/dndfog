@@ -66,7 +66,7 @@ def handle_event(event: Event, loop: LoopData, state: ProgramState) -> None:
 def handle_key_down(event: KeyEvent, loop: LoopData, state: ProgramState) -> None:
     # Save data
     if event.mod & pygame.KMOD_CTRL and event.key == pygame.K_s:
-        if event.mod & pygame.KMOD_SHIFT:
+        if event.mod & pygame.KMOD_SHIFT or state.file is None:
             file = save_file_dialog(title="Save Map", ext=[("Json file", "json")], default_ext="json")
             if file:
                 state.file = file
