@@ -41,6 +41,16 @@ def draw_pieces(display: pygame.Surface, map_data: MapData) -> None:
         )
 
 
+def draw_markings(display: pygame.Surface, map_data: MapData) -> None:
+    for (x, y), data in map_data.markings.items():
+        pygame.draw.circle(
+            display,
+            color=data.color,
+            center=(x - map_data.camera[0], y - map_data.camera[1]),
+            radius=data.size.value,
+        )
+
+
 def draw_fog(display: pygame.Surface, map_data: MapData) -> None:
     start_x, start_y, end_x, end_y = get_visible_area_limits(display, map_data.camera, map_data.gridsize)
     start_x, start_y, end_x, end_y = (

@@ -1,6 +1,6 @@
 from random import randint
 
-from dndfog.types import PieceData, PieceSize, orig_colors
+from dndfog.types import ORIG_COLORS, PieceData, PieceSize
 
 
 def add_piece(
@@ -50,7 +50,7 @@ def remove_piece(
         for x in range(size.value):
             for y in range(size.value):
                 pieces.pop((place[0] + x, place[1] + y), None)
-                if color in orig_colors and color not in colors:
+                if color in ORIG_COLORS and color not in colors:
                     colors.insert(0, color)
 
 

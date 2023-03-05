@@ -1,34 +1,28 @@
-from enum import Enum
+from typing import overload
 
 from dndfog.math import distance_between_points
-from dndfog.types import FogSize, PieceSize
+from dndfog.types import FogSize, MarkerSize, PieceSize, PlacingKey
 
 TOOLBAR_HEIGHT: int = 50
+TOOLBAR_MIDDLE: int = TOOLBAR_HEIGHT + TOOLBAR_HEIGHT // 2
+INDICATOR_WIDTH: int = 300
+
+_TOOL_OFFSET_CACHE: dict[PlacingKey, int] = {}
+_INDICATOR_CACHE: dict[PlacingKey, int] = {}
 
 
-class TBCacheKey(str, Enum):
-    grid_checkbox = "grid_checkbox"
-    fog_checkbox = "fog_checkbox"
-    fog_size = "fog_size"
-    piece_size = "piece_size"
-
-
-_TOOL_OFFSET_CACHE: dict[TBCacheKey, int] = {}
-
-
-def get_or_set_offset_cache(key: TBCacheKey, offset: int | None) -> int:
+def get_or_set_offset_cache(key: PlacingKey, offset: int | None) -> int:
     if offset is not None:
         _TOOL_OFFSET_CACHE[key] = offset
-    else:
-        offset = _TOOL_OFFSET_CACHE[key]
-    return offset
+        return offset
+    return _TOOL_OFFSET_CACHE[key]
 
 
-# Size tool
+# Placing functions
 
 
-def get_size_tool_placing(key: TBCacheKey, offset: int | None = None) -> list[tuple[tuple[int, int], int]]:
-    """Size tool centers and radii."""
+def get_placing_found_circles(key: PlacingKey, offset: int | None = None) -> list[tuple[tuple[int, int], int]]:
+    """Four circle centers and radii."""
     result: list[tuple[tuple[int, int], int]] = []
     offset = get_or_set_offset_cache(key, offset)
     x = offset + (TOOLBAR_HEIGHT // 5) - (TOOLBAR_HEIGHT // 20)
@@ -41,42 +35,79 @@ def get_size_tool_placing(key: TBCacheKey, offset: int | None = None) -> list[tu
     return result
 
 
-def select_piece_size(mouse_pos: tuple[int, int], selected_size: PieceSize) -> PieceSize:
-    for i, (center, radius) in enumerate(get_size_tool_placing(TBCacheKey.piece_size)):
-        dist = distance_between_points(center, mouse_pos)
-        if dist < radius:
-            return PieceSize(i + 1)
-    return selected_size
-
-
-def select_fog_size(mouse_pos: tuple[int, int], selected_size: FogSize) -> FogSize:
-    for i, (center, radius) in enumerate(get_size_tool_placing(TBCacheKey.fog_size)):
-        dist = distance_between_points(center, mouse_pos)
-        if dist < radius:
-            return FogSize(i + 1)
-    return selected_size
-
-
-# Checkbox tool
-
-
-def get_checkbox_tool_placing(key: TBCacheKey, offset: int | None = None) -> tuple[tuple[int, int], int]:
-    """Checkbox center and radius."""
+def get_placing_single_circle(key: PlacingKey, offset: int | None = None) -> tuple[tuple[int, int], int]:
+    """Single circle center and radius."""
     offset = get_or_set_offset_cache(key, offset)
     return (offset + (TOOLBAR_HEIGHT // 5) * 2, int(TOOLBAR_HEIGHT * 1.5)), TOOLBAR_HEIGHT // 5
 
 
-def select_grid_checkbox(mouse_pos: tuple[int, int], show_grid: bool):
-    center, radius = get_checkbox_tool_placing(TBCacheKey.grid_checkbox)
-    dist = distance_between_points(center, mouse_pos)
-    if dist < radius:
-        return not show_grid
-    return show_grid
+def set_indicator(key: PlacingKey, mouse_x: int) -> int:
+    offset = get_or_set_offset_cache(key, None)
+    x = max(min(mouse_x - offset, INDICATOR_WIDTH), 0)
+    _INDICATOR_CACHE[key] = x
+    return _INDICATOR_CACHE[key]
 
 
-def select_fog_checkbox(mouse_pos: tuple[int, int], show_fog: bool) -> bool:
-    center, radius = get_checkbox_tool_placing(TBCacheKey.fog_checkbox)
+def get_indicator_placing(key: PlacingKey, offset: int | None = None) -> tuple[int, int]:
+    offset = get_or_set_offset_cache(key, offset)
+    return _INDICATOR_CACHE.setdefault(key, 0) + offset, TOOLBAR_HEIGHT // 6
+
+
+# Tools selections
+
+
+_SIZE_KEY_MAP = {
+    PieceSize: PlacingKey.piece_size,
+    FogSize: PlacingKey.fog_size,
+    MarkerSize: PlacingKey.marker_size,
+}
+
+
+@overload
+def select_size_tool(mouse_pos: tuple[int, int], selected_size: PieceSize) -> PieceSize:
+    pass
+
+
+@overload
+def select_size_tool(mouse_pos: tuple[int, int], selected_size: FogSize) -> FogSize:
+    pass
+
+
+@overload
+def select_size_tool(mouse_pos: tuple[int, int], selected_size: MarkerSize) -> MarkerSize:
+    pass
+
+
+def select_size_tool(mouse_pos, selected_size):
+    enum_type = type(selected_size)
+    cache_key = _SIZE_KEY_MAP[enum_type]
+    placing = get_placing_found_circles(cache_key)
+    for (center, radius), size in zip(placing, enum_type.values(), strict=True):
+        dist = distance_between_points(center, mouse_pos)
+        if dist < radius:
+            return enum_type(size)
+    return selected_size
+
+
+def select_checkbox(key: PlacingKey, mouse_pos: tuple[int, int], show: bool):
+    center, radius = get_placing_single_circle(key)
     dist = distance_between_points(center, mouse_pos)
     if dist < radius:
-        return not show_fog
-    return show_fog
+        return not show
+    return show
+
+
+def select_button(key: PlacingKey, mouse_pos: tuple[int, int]) -> bool:
+    center, radius = get_placing_single_circle(key)
+    dist = distance_between_points(center, mouse_pos)
+    if dist < radius:
+        return True
+    return False
+
+
+def select_indicator(key: PlacingKey, mouse_pos: tuple[int, int]) -> bool:
+    x, radius = get_indicator_placing(key)
+    dist = distance_between_points((x, TOOLBAR_MIDDLE), mouse_pos)
+    if dist < radius:
+        return True
+    return False

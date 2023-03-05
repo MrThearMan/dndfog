@@ -1,6 +1,6 @@
 import copy
+import enum
 from dataclasses import dataclass, field
-from enum import Enum
 from itertools import cycle
 from typing import NamedTuple, Protocol, TypeAlias, TypedDict
 
@@ -10,7 +10,13 @@ pygame.font.init()
 font = pygame.font.SysFont("arial", 16)
 
 
-orig_colors = [
+class Enum(enum.Enum):
+    @classmethod
+    def values(cls):
+        return cls._value2member_map_.keys()
+
+
+ORIG_COLORS = [
     (255, 0, 0),  # red
     (255, 255, 0),  # yellow
     (0, 0, 255),  # blue
@@ -26,6 +32,14 @@ orig_colors = [
     (220, 180, 255),  # lavender
     (253, 133, 105),  # peach
 ]
+
+
+COLOR_MAP: dict[int, tuple[int, int, int]] = {}
+"""Mapping of color picker vertical pixels to assosiated colors."""
+
+
+Coordinate: TypeAlias = tuple[int, int]
+ColorTuple: TypeAlias = tuple[int, int, int]
 
 
 class KeyEvent(Protocol):
@@ -139,15 +153,27 @@ class FogSize(int, Enum):
     giant = 4
 
 
+class MarkerSize(int, Enum):
+    small = 3
+    medium = 5
+    large = 10
+    giant = 20
+
+
 class PieceData(TypedDict):
-    place: tuple[int, int]
-    parent: tuple[int, int]
-    color: tuple[int, int, int]
+    place: Coordinate
+    parent: Coordinate
+    color: ColorTuple
     size: PieceSize
     show: bool
 
 
-Pieces: TypeAlias = dict[tuple[int, int], PieceData]
+class MarkingData(NamedTuple):
+    size: MarkerSize
+    color: ColorTuple
+
+
+Pieces: TypeAlias = dict[Coordinate, PieceData]
 
 
 class BackgroundImage(TypedDict):
@@ -159,10 +185,10 @@ class BackgroundImage(TypedDict):
 
 class SaveData(TypedDict):
     gridsize: int
-    removed_fog: list[tuple[int, int]]
+    removed_fog: list[Coordinate]
     background: BackgroundImage
     pieces: list[PieceData]
-    camera: tuple[int, int]
+    camera: Coordinate
     map_offset: tuple[float, float]
     show_grid: bool
     show_fog: bool
@@ -173,10 +199,17 @@ class Tool(int, Enum):
     fog = 1
     map = 2
     grid = 3
+    mark = 4
 
-    @classmethod
-    def values(cls):
-        return cls._value2member_map_.keys()
+
+class PlacingKey(str, Enum):
+    grid_checkbox = "grid_checkbox"
+    fog_checkbox = "fog_checkbox"
+    fog_size = "fog_size"
+    piece_size = "piece_size"
+    clear_markings = "markings_clear"
+    marker_size = "marker_size"
+    marker_color = "marker_color"
 
 
 @dataclass
@@ -189,9 +222,12 @@ class Show:
 @dataclass
 class Selected:
     tool: Tool = Tool.piece
-    size: PieceSize = PieceSize.small
-    piece: tuple[int, int] | None = None
+    piece: Coordinate | None = None
+    piece_size: PieceSize = PieceSize.small
     fog: FogSize = FogSize.small
+    marker_size: MarkerSize = MarkerSize.small
+    marker_color: ColorTuple = (0x00, 0x00, 0x00)
+    indicator: PlacingKey | None = None
 
 
 @dataclass
@@ -200,10 +236,12 @@ class MapData:
     original_image: pygame.Surface | None = None
     image_offset: tuple[float, float] = (0, 0)
     pieces: Pieces = field(default_factory=dict)
-    removed_fog: set[tuple[int, int]] = field(default_factory=set)
-    fog_color: tuple[int, int, int] = (0xCC, 0xCC, 0xCC)
-    grid_color: tuple[int, int, int] = (0xC5, 0xC5, 0xC5)
-    camera: tuple[int, int] = (0, 0)
+    removed_fog: set[Coordinate] = field(default_factory=set)
+    markings: dict[Coordinate, MarkingData] = field(default_factory=dict)
+    last_marking: Coordinate | None = None
+    fog_color: ColorTuple = (0xCC, 0xCC, 0xCC)
+    grid_color: ColorTuple = (0xC5, 0xC5, 0xC5)
+    camera: Coordinate = (0, 0)
     gridsize: int = 36
 
 
@@ -211,13 +249,13 @@ class MapData:
 class ProgramState:
     show: Show = field(default_factory=Show)
     selected: Selected = field(default_factory=Selected)
-    colors: list[tuple[int, int, int]] = field(default_factory=orig_colors.copy)
+    colors: list[ColorTuple] = field(default_factory=ORIG_COLORS.copy)
     map: MapData = field(default_factory=MapData)
 
 
 class LoopData(NamedTuple):
-    mouse_pos: tuple[int, int]
-    grid_pos: tuple[int, int]
+    mouse_pos: Coordinate
+    grid_pos: Coordinate
     mouse_speed: tuple[int, int]
     pressed_modifiers: int
     pressed_buttons: tuple[bool, bool, bool]

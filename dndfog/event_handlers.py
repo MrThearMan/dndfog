@@ -6,10 +6,28 @@ from dndfog.camera import move_camera, zoom_camera
 from dndfog.fog import add_fog, remove_fog
 from dndfog.grid import grid_position
 from dndfog.map import move_map, zoom_map
+from dndfog.markings import add_markings, remove_markings
 from dndfog.piece import add_piece, move_piece, remove_piece
 from dndfog.saving import open_data_file, open_file_dialog, save_data_file
-from dndfog.toolbar import TOOLBAR_HEIGHT, select_fog_checkbox, select_fog_size, select_grid_checkbox, select_piece_size
-from dndfog.types import Event, KeyEvent, LoopData, MouseButtonEvent, MouseWheelEvent, ProgramState, Tool
+from dndfog.toolbar import (
+    TOOLBAR_HEIGHT,
+    select_button,
+    select_checkbox,
+    select_indicator,
+    select_size_tool,
+    set_indicator,
+)
+from dndfog.types import (
+    COLOR_MAP,
+    Event,
+    KeyEvent,
+    LoopData,
+    MouseButtonEvent,
+    MouseWheelEvent,
+    PlacingKey,
+    ProgramState,
+    Tool,
+)
 
 
 def handle_event(event: Event, loop: LoopData, state: ProgramState) -> None:
@@ -65,7 +83,7 @@ def handle_key_down(event: KeyEvent, loop: LoopData, state: ProgramState) -> Non
         state.show.grid = not state.show.grid
 
     # Hide/Show fog
-    elif event.key == pygame.K_F12:
+    elif event.key == pygame.K_F2:
         state.show.fog = not state.show.fog
 
     # Tool quickselect (1-9)
@@ -78,12 +96,23 @@ def handle_mouse_wheel(event: MouseWheelEvent, loop: LoopData, state: ProgramSta
     old_gridsize = state.map.gridsize
     if state.map.gridsize + event.y > 0:
         state.map.gridsize = state.map.gridsize + event.y
+        old_camera = state.map.camera
+
         state.map.camera = zoom_camera(
             camera=state.map.camera,
             mouse_position=loop.mouse_pos,
             new_gridsize=state.map.gridsize,
             old_gridsize=old_gridsize,
         )
+
+        dx = state.map.camera[0] - old_camera[0]
+        dy = state.map.camera[1] - old_camera[1]
+
+        new_markings: set[tuple[int, int]] = set()
+        for marking in state.map.markings:
+            new_markings.add((marking[0] + dx, marking[1] + dy))
+        state.map.markings = new_markings
+
         if not loop.pressed_modifiers & pygame.KMOD_ALT:
             state.map.image = zoom_map(
                 image=state.map.image,
@@ -105,30 +134,57 @@ def handle_left_mouse_button_down(event: MouseButtonEvent, loop: LoopData, state
     # Use an option from the toolbar
     elif state.show.toolbar and TOOLBAR_HEIGHT <= loop.mouse_pos[1] < TOOLBAR_HEIGHT * 2:
         if state.selected.tool == Tool.piece:
-            state.selected.size = select_piece_size(loop.mouse_pos, state.selected.size)
+            state.selected.piece_size = select_size_tool(loop.mouse_pos, state.selected.piece_size)
+
         elif state.selected.tool == Tool.fog:
-            state.show.fog = select_fog_checkbox(loop.mouse_pos, state.show.fog)
-            state.selected.fog = select_fog_size(loop.mouse_pos, state.selected.fog)
+            state.show.fog = select_checkbox(PlacingKey.fog_checkbox, loop.mouse_pos, state.show.fog)
+            state.selected.fog = select_size_tool(loop.mouse_pos, state.selected.fog)
+
         elif state.selected.tool == Tool.grid:
-            state.show.grid = select_grid_checkbox(loop.mouse_pos, state.show.grid)
+            state.show.grid = select_checkbox(PlacingKey.grid_checkbox, loop.mouse_pos, state.show.grid)
+
+        elif state.selected.tool == Tool.mark:
+            if select_button(PlacingKey.clear_markings, loop.mouse_pos):
+                state.map.markings = {}
+            state.selected.marker_size = select_size_tool(loop.mouse_pos, state.selected.marker_size)
+            if select_indicator(PlacingKey.marker_color, loop.mouse_pos):
+                state.selected.indicator = PlacingKey.marker_color
 
     # Move piece
     elif state.selected.tool == Tool.piece:
         if loop.grid_pos in state.map.pieces:
             state.selected.piece = loop.grid_pos
 
+    # Add fog
+    elif state.selected.tool == Tool.fog:
+        add_fog(state.map.removed_fog, loop.mouse_pos, state.map.camera, state.map.gridsize, state.selected.fog)
+
+    # Add markings
+    elif state.selected.tool == Tool.mark:
+        add_markings(loop.mouse_pos, state)
+
 
 def handle_right_mouse_button_down(event: MouseButtonEvent, loop: LoopData, state: ProgramState) -> None:
+    # Add or remove piece
     if state.selected.tool == Tool.piece:
         if loop.grid_pos in state.map.pieces:
             remove_piece(loop.grid_pos, state.map.pieces, state.colors)
         else:
-            add_piece(loop.grid_pos, state.map.pieces, state.colors, state.selected.size)
+            add_piece(loop.grid_pos, state.map.pieces, state.colors, state.selected.piece_size)
+
+    # Remove fog
+    elif state.selected.tool == Tool.fog:
+        remove_fog(state.map.removed_fog, loop.mouse_pos, state.map.camera, state.map.gridsize, state.selected.fog)
+
+    # Remove markings
+    elif state.selected.tool == Tool.mark:
+        remove_markings(loop.mouse_pos, state)
 
 
 def handle_left_mouse_button_up(event: MouseButtonEvent, loop: LoopData, state: ProgramState) -> None:
-    # Stop moving a piece
     state.selected.piece = None
+    state.map.last_marking = None
+    state.selected.indicator = None
 
 
 def handle_right_mouse_button_up(event: MouseButtonEvent, loop: LoopData, state: ProgramState) -> None:
@@ -146,6 +202,13 @@ def handle_hold_left_mouse_button(event: MouseButtonEvent, loop: LoopData, state
     elif state.selected.tool == Tool.map:
         state.map.image_offset = move_map(state.map.image_offset, state.map.gridsize, loop.mouse_speed)
 
+    elif state.selected.tool == Tool.mark:
+        if state.map.last_marking is not None:  # don't pass any possible hold events after mouse up
+            add_markings(loop.mouse_pos, state)
+        elif state.selected.indicator == PlacingKey.marker_color:
+            pos = set_indicator(PlacingKey.marker_color, loop.mouse_pos[0])
+            state.selected.marker_color = COLOR_MAP[pos]
+
 
 def handle_middle_mouse_button_held(event: MouseButtonEvent, loop: LoopData, state: ProgramState) -> None:
     # Move camera
@@ -155,3 +218,6 @@ def handle_middle_mouse_button_held(event: MouseButtonEvent, loop: LoopData, sta
 def handle_right_mouse_button_held(event: MouseButtonEvent, loop: LoopData, state: ProgramState) -> None:
     if state.selected.tool == Tool.fog:
         remove_fog(state.map.removed_fog, loop.mouse_pos, state.map.camera, state.map.gridsize, state.selected.fog)
+
+    elif state.selected.tool == Tool.mark:
+        remove_markings(loop.mouse_pos, state)

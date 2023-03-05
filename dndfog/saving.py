@@ -10,12 +10,12 @@ from win32con import OFN_ALLOWMULTISELECT, OFN_EXPLORER
 from win32gui import GetOpenFileNameW, GetSaveFileNameW
 
 from dndfog.types import (
+    ORIG_COLORS,
     BackgroundImage,
     PieceData,
     PieceSize,
     ProgramState,
     SaveData,
-    orig_colors,
 )
 
 __all__ = [
@@ -194,7 +194,7 @@ def open_data_file(openpath: str, state: ProgramState) -> None:
     state.map.camera = tuple(data["camera"])
     state.map.image_offset = tuple(data["map_offset"])
     state.colors = [
-        color for color in orig_colors if color not in {piece["color"] for piece in state.map.pieces.values()}
+        color for color in ORIG_COLORS if color not in {piece["color"] for piece in state.map.pieces.values()}
     ]
     state.show.grid = data["show_grid"]
     state.show.fog = data["show_fog"]
