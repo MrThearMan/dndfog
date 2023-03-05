@@ -45,9 +45,9 @@ def draw_markings(display: pygame.Surface, map_data: MapData) -> None:
     for (x, y), data in map_data.markings.items():
         pygame.draw.circle(
             display,
-            color=data.color,
+            color=data["color"],
             center=(x - map_data.camera[0], y - map_data.camera[1]),
-            radius=data.size.value,
+            radius=data["size"].value,
         )
 
 

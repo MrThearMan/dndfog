@@ -6,9 +6,9 @@ from dndfog.camera import move_camera, zoom_camera
 from dndfog.fog import add_fog, remove_fog
 from dndfog.grid import grid_position
 from dndfog.map import move_map, zoom_map
-from dndfog.markings import add_markings, remove_markings
+from dndfog.markings import add_markings, move_markings, remove_markings
 from dndfog.piece import add_piece, move_piece, remove_piece
-from dndfog.saving import open_data_file, open_file_dialog, save_data_file
+from dndfog.saving import open_data_file, open_file_dialog, save_data_file, save_file_dialog
 from dndfog.toolbar import (
     TOOLBAR_HEIGHT,
     select_button,
@@ -66,13 +66,20 @@ def handle_event(event: Event, loop: LoopData, state: ProgramState) -> None:
 def handle_key_down(event: KeyEvent, loop: LoopData, state: ProgramState) -> None:
     # Save data
     if event.mod & pygame.KMOD_CTRL and event.key == pygame.K_s:
-        save_data_file(state=state)
+        if event.mod & pygame.KMOD_SHIFT:
+            file = save_file_dialog(title="Save Map", ext=[("Json file", "json")], default_ext="json")
+            if file:
+                state.file = file
+                save_data_file(state)
+        else:
+            save_data_file(state)
 
     # Load data
     elif event.mod & pygame.KMOD_CTRL and event.key == pygame.K_o:
-        openpath = open_file_dialog(title="Open Map", ext=[("Json file", "json")], default_ext="json")
-        if openpath:
-            open_data_file(openpath, state)
+        path = open_file_dialog(title="Open Map", ext=[("Json file", "json")], default_ext="json")
+        if path:
+            state.file = path
+            open_data_file(state)
 
     # Hide/Show toolbar
     elif event.key == pygame.K_TAB:
@@ -105,13 +112,7 @@ def handle_mouse_wheel(event: MouseWheelEvent, loop: LoopData, state: ProgramSta
             old_gridsize=old_gridsize,
         )
 
-        dx = state.map.camera[0] - old_camera[0]
-        dy = state.map.camera[1] - old_camera[1]
-
-        new_markings: set[tuple[int, int]] = set()
-        for marking in state.map.markings:
-            new_markings.add((marking[0] + dx, marking[1] + dy))
-        state.map.markings = new_markings
+        move_markings(old_camera, state)
 
         if not loop.pressed_modifiers & pygame.KMOD_ALT:
             state.map.image = zoom_map(

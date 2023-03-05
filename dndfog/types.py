@@ -2,7 +2,7 @@ import copy
 import enum
 from dataclasses import dataclass, field
 from itertools import cycle
-from typing import NamedTuple, Protocol, TypeAlias, TypedDict
+from typing import Literal, NamedTuple, Protocol, TypeAlias, TypedDict
 
 import pygame
 
@@ -168,30 +168,14 @@ class PieceData(TypedDict):
     show: bool
 
 
-class MarkingData(NamedTuple):
+class MarkingData(TypedDict):
+    place: Coordinate
     size: MarkerSize
     color: ColorTuple
 
 
 Pieces: TypeAlias = dict[Coordinate, PieceData]
-
-
-class BackgroundImage(TypedDict):
-    img: str
-    size: tuple[int, int]
-    mode: str
-    zoom: tuple[int, int]
-
-
-class SaveData(TypedDict):
-    gridsize: int
-    removed_fog: list[Coordinate]
-    background: BackgroundImage
-    pieces: list[PieceData]
-    camera: Coordinate
-    map_offset: tuple[float, float]
-    show_grid: bool
-    show_fog: bool
+Markings: TypeAlias = dict[Coordinate, MarkingData]
 
 
 class Tool(int, Enum):
@@ -212,11 +196,48 @@ class PlacingKey(str, Enum):
     marker_color = "marker_color"
 
 
+class BackgroundImage(TypedDict):
+    img: str
+    size: tuple[int, int]
+    mode: Literal["P", "RGB", "RGBX", "RGBA", "ARGB", "BGRA"]
+    zoom: tuple[int, int]
+
+
+class SaveDataShow(TypedDict):
+    grid: bool
+    fog: bool
+    toolbar: bool
+
+
+class SaveDataMap(TypedDict):
+    gridsize: int
+    camera: Coordinate
+    image: BackgroundImage
+    image_offset: tuple[float, float]
+    pieces: list[PieceData]
+    removed_fog: list[Coordinate]
+    markings: list[MarkingData]
+    fog_color: ColorTuple
+    grid_color: ColorTuple
+
+
+class SaveData(TypedDict):
+    show: SaveDataShow
+    map: SaveDataMap
+
+
 @dataclass
 class Show:
     grid: bool = False
     fog: bool = False
     toolbar: bool = False
+
+    def to_json(self) -> SaveDataShow:
+        return SaveDataShow(
+            grid=self.grid,
+            fog=self.fog,
+            toolbar=self.toolbar,
+        )
 
 
 @dataclass
@@ -232,17 +253,37 @@ class Selected:
 
 @dataclass
 class MapData:
+    gridsize: int = 36
+    camera: Coordinate = (0, 0)
     image: pygame.Surface | None = None
     original_image: pygame.Surface | None = None
     image_offset: tuple[float, float] = (0, 0)
     pieces: Pieces = field(default_factory=dict)
     removed_fog: set[Coordinate] = field(default_factory=set)
-    markings: dict[Coordinate, MarkingData] = field(default_factory=dict)
+    markings: Markings = field(default_factory=dict)
     last_marking: Coordinate | None = None
     fog_color: ColorTuple = (0xCC, 0xCC, 0xCC)
     grid_color: ColorTuple = (0xC5, 0xC5, 0xC5)
-    camera: Coordinate = (0, 0)
-    gridsize: int = 36
+
+    def to_json(self) -> SaveDataMap:
+        from dndfog.saving import serialize_map
+
+        return SaveDataMap(
+            gridsize=self.gridsize,
+            camera=self.camera,
+            image=BackgroundImage(
+                img=serialize_map(self.original_image),
+                size=self.original_image.get_size(),
+                mode="RGBA",
+                zoom=self.image.get_size(),
+            ),
+            image_offset=self.image_offset,
+            pieces=list(self.pieces.values()),
+            removed_fog=list(self.removed_fog),
+            markings=list(self.markings.values()),
+            fog_color=self.fog_color,
+            grid_color=self.grid_color,
+        )
 
 
 @dataclass
@@ -251,6 +292,13 @@ class ProgramState:
     selected: Selected = field(default_factory=Selected)
     colors: list[ColorTuple] = field(default_factory=ORIG_COLORS.copy)
     map: MapData = field(default_factory=MapData)
+    file: str | None = None
+
+    def to_json(self) -> SaveData:
+        return {
+            "show": self.show.to_json(),
+            "map": self.map.to_json(),
+        }
 
 
 class LoopData(NamedTuple):

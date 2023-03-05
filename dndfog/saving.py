@@ -12,6 +12,8 @@ from win32gui import GetOpenFileNameW, GetSaveFileNameW
 from dndfog.types import (
     ORIG_COLORS,
     BackgroundImage,
+    MarkerSize,
+    MarkingData,
     PieceData,
     PieceSize,
     ProgramState,
@@ -26,16 +28,17 @@ __all__ = [
 ]
 
 
-def load_map(start_file: str, state: ProgramState) -> None:
+def load_map(map_file: str, state: ProgramState) -> None:
     # Load data file
-    if start_file[-5:] == ".json":
-        open_data_file(start_file, state)
+    if map_file[-5:] == ".json":
+        state.file = map_file
+        open_data_file(state)
+        return
 
     # Load background image
-    else:
-        state.map.image = pygame.image.load(start_file).convert_alpha()
-        state.map.image.set_colorkey((255, 255, 255))
-        state.map.original_image = state.map.image.copy()
+    state.map.image = pygame.image.load(map_file).convert_alpha()
+    state.map.image.set_colorkey((255, 255, 255))
+    state.map.original_image = state.map.image.copy()
 
 
 def open_file_dialog(
@@ -151,34 +154,21 @@ def save_file_dialog(
 
 
 def save_data_file(state: ProgramState) -> None:
-    savepath = save_file_dialog(title="Save Map", ext=[("Json file", "json")], default_ext="json")
-    if savepath:
-        data = SaveData(
-            gridsize=state.map.gridsize,
-            removed_fog=list(state.map.removed_fog),
-            background=BackgroundImage(
-                img=serialize_map(state.map.original_image),
-                size=state.map.original_image.get_size(),
-                mode="RGBA",
-                zoom=state.map.image.get_size(),
-            ),
-            pieces=list(state.map.pieces.values()),
-            camera=state.map.camera,
-            map_offset=state.map.image_offset,
-            show_grid=state.show.grid,
-            show_fog=state.show.fog,
-        )
-
-        with open(savepath, "w") as f:
-            json.dump(data, f, indent=2)
+    data = state.to_json()
+    with open(state.file, "w") as f:
+        json.dump(data, f, indent=2)
 
 
-def open_data_file(openpath: str, state: ProgramState) -> None:
-    with open(openpath, "r") as f:
+def open_data_file(state: ProgramState) -> None:
+    with open(state.file, "r") as f:
         data: SaveData = json.load(f)
 
-    state.map.gridsize = int(data["gridsize"])
-    state.map.removed_fog = {(x, y) for x, y in data["removed_fog"]}
+    state.map.gridsize = int(data["map"]["gridsize"])
+    state.map.removed_fog = {(x, y) for x, y in data["map"]["removed_fog"]}
+    state.map.original_image = deserialize_map(data["map"]["image"])
+    state.map.image = pygame.transform.scale(state.map.original_image, data["map"]["image"]["zoom"])
+    state.map.camera = tuple(data["map"]["camera"])
+    state.map.image_offset = tuple(data["map"]["image_offset"])
     state.map.pieces = {
         tuple(piece["place"]): PieceData(
             parent=tuple(piece["parent"]),
@@ -187,17 +177,23 @@ def open_data_file(openpath: str, state: ProgramState) -> None:
             size=PieceSize(int(piece["size"])),
             show=piece["show"],
         )
-        for piece in data["pieces"]
+        for piece in data["map"]["pieces"]
     }
-    state.map.original_image = deserialize_map(data)
-    state.map.image = pygame.transform.scale(state.map.original_image, data["background"]["zoom"])
-    state.map.camera = tuple(data["camera"])
-    state.map.image_offset = tuple(data["map_offset"])
+    state.map.markings = {
+        tuple(marking["place"]): MarkingData(
+            place=tuple(marking["place"]),
+            color=tuple(marking["color"]),
+            size=MarkerSize(int(marking["size"])),
+        )
+        for marking in data["map"]["markings"]
+    }
+
+    state.show.grid = data["show"]["grid"]
+    state.show.fog = data["show"]["fog"]
+
     state.colors = [
         color for color in ORIG_COLORS if color not in {piece["color"] for piece in state.map.pieces.values()}
     ]
-    state.show.grid = data["show_grid"]
-    state.show.fog = data["show_fog"]
 
 
 def serialize_map(surface: pygame.Surface) -> str:
@@ -208,9 +204,9 @@ def serialize_map(surface: pygame.Surface) -> str:
     ).decode()
 
 
-def deserialize_map(data: dict) -> pygame.Surface:
+def deserialize_map(data: BackgroundImage) -> pygame.Surface:
     return pygame.image.fromstring(
-        gzip.decompress(base64.b64decode(data["background"]["img"])),  # type: ignore
-        data["background"]["size"],
-        data["background"]["mode"],
+        gzip.decompress(base64.b64decode(data["img"])),
+        data["size"],
+        data["mode"],
     ).convert_alpha()

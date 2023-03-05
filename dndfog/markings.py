@@ -1,24 +1,22 @@
 from typing import Any, Generator
 
-from dndfog.types import MarkingData, ProgramState
+from dndfog.types import MarkingData, Markings, ProgramState
 
 
-def add_markings(
-    mouse_pos: tuple[int, int],
-    state: ProgramState,
-) -> None:
+def add_markings(mouse_pos: tuple[int, int], state: ProgramState) -> None:
     position = (mouse_pos[0] + state.map.camera[0], mouse_pos[1] + state.map.camera[1])
 
     for marking in interpolate_line(position, state.map.last_marking):
-        state.map.markings[marking] = MarkingData(size=state.selected.marker_size, color=state.selected.marker_color)
+        state.map.markings[marking] = MarkingData(
+            place=marking,
+            size=state.selected.marker_size,
+            color=state.selected.marker_color,
+        )
 
     state.map.last_marking = position
 
 
-def remove_markings(
-    mouse_pos: tuple[int, int],
-    state: ProgramState,
-) -> None:
+def remove_markings(mouse_pos: tuple[int, int], state: ProgramState) -> None:
     size = state.selected.marker_size.value * 10
     low = 0 - size // 2
     high = size - size // 2
@@ -26,6 +24,16 @@ def remove_markings(
         for y in range(low, high):
             position = (mouse_pos[0] + state.map.camera[0] + x, mouse_pos[1] + state.map.camera[1] + y)
             state.map.markings.pop(position, None)
+
+
+def move_markings(old_camera: tuple[int, int], state: ProgramState) -> None:
+    dx = state.map.camera[0] - old_camera[0]
+    dy = state.map.camera[1] - old_camera[1]
+    new_markings: Markings = {}
+    for marking, data in state.map.markings.items():
+        data["place"] = (marking[0] + dx, marking[1] + dy)
+        new_markings[data["place"]] = data
+    state.map.markings = new_markings
 
 
 def interpolate_line(
