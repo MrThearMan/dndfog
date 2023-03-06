@@ -114,7 +114,7 @@ def handle_mouse_wheel(event: MouseWheelEvent, loop: LoopData, state: ProgramSta
 
         move_markings(old_camera, state)
 
-        if not loop.pressed_modifiers & pygame.KMOD_ALT:
+        if state.selected.tool != Tool.grid:
             state.map.image = zoom_map(
                 image=state.map.image,
                 original_image=state.map.original_image,

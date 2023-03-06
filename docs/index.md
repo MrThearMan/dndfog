@@ -35,8 +35,8 @@ Create battlemaps for tabletop RPGs, like [D&D](https://www.dndbeyond.com/).
 - Import maps from image files
 - Place, move and remove pieces on a grid (can be matched to image grid)
 - Place 1x1, 2x2, 3x3, or 4x4 pieces
-- Place and remove [AOE's](https://en.wikipedia.org/wiki/Area_of_effect)
-- Save and load file to JSON files (background image saved in the JSON file!)
+- Make markings on the map to show areas of effect or point out things to the players
+- Save and load file to a single JSON file (no need to keep the image file separately!)
 
 ## How to use
 
@@ -46,51 +46,64 @@ the `Python\Scripts` folder is set in PATH. You can also download an EXE from
 the [GitHub releases](https://github.com/MrThearMan/dndfog/releases).
 
 When the program opens, you need to select an image file to use as a background,
-or a JSON data file to load a map from. You can also lauch the program with extra
-arguments `--file=<filepath>` or `--gridsize=<size>` to change the opening parameters.
+or a JSON data file to load a map from. You can also lauch the program with
+`--file=<filepath>` to add an initial file.
 
 > The program does not autosave! You have to save (and override) the file yourself!
 
 ### Keyboard shortcuts
 
-- Remove fog: `CTRL + Left mouse button`
-- Add fog: `CTRL + Shift + Left mouse button`
-- Add a piece: `Right mouse button`
-- Remove a piece: `Double click: Right mouse button`
-- Move a piece: `Click and drag: Left mouse button`
+Toolbar:
+- Open/close the toolbar: `TAB`
+- Select tool from the toolbar: Quick select with the number keys `1-9` or click the
+  tool button with `Left mouse button` when the toolbar is open
+
+Camera:
 - Move camera: `Click and drag: Middle mouse button`
-- Move background map: `ALT + Click and drag: Left mouse button`
-- Add AOE: `CTRL + Click and drag: Right mouse button (change size)`
-- Remove AOE: `CTRL + Shift + Double click: Right mouse button`
-- Zoom in: `Scroll wheel: Up`
-- Zoom out: `Scroll wheel: Down`
-- Increase gridsize: `ALT + Scroll wheel: Up`
-- Decrease gridsize: `ALT + Scroll wheel: Down`
-- Select 1x1 piece placement: `1`
-- Select 2x2 piece placement: `2`
-- Select 3x3 piece placement: `3`
-- Select 4x4 piece placement: `4`
-- Show/hide fog: `F1`
-- Show/hide grid: `F12`
-- Save file: `CTRL + S`
+- Zoom in: _Any tool except the `grid` tool_ selected from the toolbar + `Scroll wheel: Up`
+- Zoom out: _Any tool except the `grid` tool_ selected from the toolbar + `Scroll wheel: Down`
+
+Piece (quick select: `1`):
+- Add a piece: Select the `piece` tool from the toolbar + `Right mouse button` on an empty square
+- Remove a piece: Select the `piece` tool from the toolbar  + `Right mouse button` on a piece
+- Move a piece: Select the `piece` tool from the toolbar  + `Click and drag: Left mouse button`
+
+Fog (quick select: `2`):
+- Add fog: Select the `fog` tool from the toolbar  + `Left mouse button`
+- Remove fog: Select the `fog` tool from the toolbar  + `Right mouse button`
+- Show/hide fog: `F1` or the checkbox in the `fog` toolbar
+- Change fog size: Select the size to use from the `size` selector in the `fog` toolbar
+
+Map (quick select: `3`):
+- Move map image: Select the `map` tool from the toolbar + `Click and drag: Left mouse button`
+
+Grid (quick select: `4`):
+- Increase gridsize: Select the `grid` tool from the toolbar + `Scroll wheel: Up`
+- Decrease gridsize: Select the `grid` tool from the toolbar + `Scroll wheel: Down`
+- Show/hide grid: `F2` or the checkbox in the `fog` toolbar
+
+Mark (quick select: `5`):
+- Make markings: Select the `mark` tool from the toolbar + `Click and drag: Left mouse button`
+- Erase markings: Select the `mark` tool from the toolbar + `Click and drag: Right mouse button`
+- Clear markings: Click the `clear` button in the `mark` toolbar
+- Change marker color: Use the color selector in the `mark` toolbar
+
+Misc:
+- Save file: `CTRL + S` (will skip file dialog if json data file already exists)
+- Save file as: `CTRL + Shift + S` (will always open a file dialog)
 - Open file: `CTRL + O`
-- Quit program: `Esc`
+- Quit program: Press the X mutton on the window
 
 ## Known issues or lacking features
 
-- When zooming, the program grid and background map might not stay aligned,
-  if you have moved the background map. This is due to the background map offset
-  not being scaled correctly to the new zoom level. Usually this should be only
-  a few pixels, and you can fix it quickly by moving the background.
-
-- Matching program gridsize to background gridsize is a bit awkward. You can either
-  use the `--gridsize=<size>` extra argument on lauch, or change it with
-  `ALT + Scroll wheel`, but there is bound to be some misalignment that you have to
-  correct by moving the background.
-- AOEs might do not stay the correct size when zooming back and forth.
-- There is no undo or redo.
-- There is no way to add pictures to pieces.
-- There is no way to mark/point on things on the map (apart from the mouse cursor).
+- Matching program gridsize to background gridsize is a bit awkward
+- When zooming, the program grid and background map might not stay aligned
+- It's hard to keep track of combat, since there is no built-in turn order tracking
+- It's too easy to accidentally remove fog you didn't mean to. There should be some way to
+  layer fog, so that only some of it can be removed
+- Markings do not scale when zooming
+- There is no undo or redo
+- There is no way to add pictures to pieces to identify them better
 
 [status-badge]: https://img.shields.io/github/actions/workflow/status/MrThearMan/dndfog/test.yml?branch=main
 [pypi-badge]: https://img.shields.io/pypi/v/dndfog
