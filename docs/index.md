@@ -47,7 +47,7 @@ the [GitHub releases](https://github.com/MrThearMan/dndfog/releases).
 
 When the program opens, you need to select an image file to use as a background,
 or a JSON data file to load a map from. You can also lauch the program with
-`--file=<filepath>` to add an initial file.
+a positional argument `<filepath>` to add an initial file.
 
 > The program does not autosave! You have to save (and override) the file yourself!
 
