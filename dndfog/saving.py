@@ -2,6 +2,7 @@ import base64
 import gzip
 import json
 import os
+from pathlib import Path
 from typing import Optional
 
 import pygame
@@ -29,16 +30,22 @@ __all__ = [
 
 
 def load_map(map_file: str, state: ProgramState) -> None:
+    extension = Path(map_file).suffix
+
     # Load data file
-    if map_file[-5:] == ".json":
+    if extension in [".json", ".dndfog"]:
         state.file = map_file
         open_data_file(state)
         return
 
     # Load background image
-    state.map.image = pygame.image.load(map_file).convert_alpha()
-    state.map.image.set_colorkey((255, 255, 255))
-    state.map.original_image = state.map.image.copy()
+    elif extension in [".png", ".jpg", ".jpeg"]:
+        state.map.image = pygame.image.load(map_file).convert_alpha()
+        state.map.image.set_colorkey((255, 255, 255))
+        state.map.original_image = state.map.image.copy()
+        return
+
+    raise RuntimeError("Unsupported file type.")
 
 
 def open_file_dialog(
