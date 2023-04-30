@@ -30,7 +30,7 @@ from dndfog.types import (
 )
 
 
-def handle_event(event: Event, loop: LoopData, state: ProgramState) -> None:
+def handle_event(event: Event, loop: LoopData, state: ProgramState) -> None:  # noqa: C901
     if event.type == pygame.QUIT:
         pygame.quit()
         sys.exit()
@@ -123,7 +123,7 @@ def handle_mouse_wheel(event: MouseWheelEvent, loop: LoopData, state: ProgramSta
             )
 
 
-def handle_left_mouse_button_down(event: MouseButtonEvent, loop: LoopData, state: ProgramState) -> None:
+def handle_left_mouse_button_down(event: MouseButtonEvent, loop: LoopData, state: ProgramState) -> None:  # noqa: C901
     # Select a tool from the toolbar
     if state.show.toolbar and 0 <= loop.mouse_pos[1] < TOOLBAR_HEIGHT:
         item_clicked, _ = grid_position(loop.mouse_pos, (0, 0), TOOLBAR_HEIGHT)
