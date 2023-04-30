@@ -16,10 +16,10 @@ def draw(display: pygame.Surface, loop: LoopData, state: ProgramState) -> None:
 
     draw_pieces(display, state.map)
 
-    draw_markings(display, state.map)
-
     if state.show.fog:
         draw_fog(display, state.map)
+
+    draw_markings(display, state.map)
 
     draw_toolbar(display, loop.mouse_pos, state)
 
