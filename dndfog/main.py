@@ -6,7 +6,7 @@ from dndfog.saving import open_file_dialog
 
 def start() -> None:
     parser = ArgumentParser()
-    parser.add_argument("--file", default=None)
+    parser.add_argument("file", default=None)
     args = parser.parse_args()
 
     if args.file is not None:
