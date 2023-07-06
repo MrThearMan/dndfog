@@ -217,3 +217,12 @@ def deserialize_map(data: BackgroundImage) -> pygame.Surface:
         data["size"],
         data["mode"],
     ).convert_alpha()
+
+
+def get_default_filename(state: ProgramState) -> str:
+    if state.file is None:
+        return ""
+
+    filename = state.file.rsplit("/", maxsplit=1)[-1]
+    filename = filename.rsplit(".", maxsplit=1)[0]
+    return filename

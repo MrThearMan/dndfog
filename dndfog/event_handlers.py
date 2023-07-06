@@ -8,7 +8,7 @@ from dndfog.grid import grid_position
 from dndfog.map import move_map, zoom_map
 from dndfog.markings import add_markings, move_markings, remove_markings
 from dndfog.piece import add_piece, move_piece, remove_piece
-from dndfog.saving import open_data_file, open_file_dialog, save_data_file, save_file_dialog
+from dndfog.saving import get_default_filename, open_data_file, open_file_dialog, save_data_file, save_file_dialog
 from dndfog.toolbar import (
     TOOLBAR_HEIGHT,
     select_button,
@@ -67,7 +67,17 @@ def handle_key_down(event: KeyEvent, loop: LoopData, state: ProgramState) -> Non
     # Save data
     if event.mod & pygame.KMOD_CTRL and event.key == pygame.K_s:
         if event.mod & pygame.KMOD_SHIFT or state.file is None:
-            file = save_file_dialog(title="Save Map", ext=[("Json file", "json")], default_ext="json")
+            filename = get_default_filename(state)
+
+            file = save_file_dialog(
+                title="Save Map",
+                ext=[
+                    ("DND fog file", "dndfog"),
+                    ("Json file", "json"),
+                ],
+                default_name=filename,
+                default_ext="dndfog",
+            )
             if file:
                 state.file = file
                 save_data_file(state)
@@ -76,7 +86,14 @@ def handle_key_down(event: KeyEvent, loop: LoopData, state: ProgramState) -> Non
 
     # Load data
     elif event.mod & pygame.KMOD_CTRL and event.key == pygame.K_o:
-        path = open_file_dialog(title="Open Map", ext=[("Json file", "json")], default_ext="json")
+        path = open_file_dialog(
+            title="Open Map",
+            ext=[
+                ("DND fog file", "dndfog"),
+                ("Json file", "json"),
+            ],
+            default_ext="dndfog",
+        )
         if path:
             state.file = path
             open_data_file(state)

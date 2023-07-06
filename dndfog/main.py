@@ -14,7 +14,7 @@ def start() -> None:
     else:
         map_file = open_file_dialog(
             title="Select a background map, or a json data file",
-            ext=[("PNG file", "png"), ("JPG file", "jpg"), ("JSON file", "json")],
+            ext=[("PNG file", "png"), ("JPG file", "jpg"), ("JSON file", "json"), ("DND fog file", "dndfog")],
         )
 
     if not map_file:
