@@ -43,24 +43,24 @@ exclude = [
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
 pywin32 = "306"
-pygame-ce = ">=2.2.1"
+pygame-ce = "2.3.0"
 
 [tool.poetry.group.test.dependencies]
-pytest = "7.3.1"
+pytest = "7.4.0"
 coverage = "6.5.0"
-pre-commit = "3.2.2"
-tox = "4.5.1"
-tox-gh-actions = "3.1.0"
+pre-commit = "3.3.3"
+tox = "4.6.3"
+tox-gh-actions = "3.1.1"
 coveralls = "3.3.1"
-pyinstaller = "5.10.1"
+pyinstaller = "5.13.0"
 
 [tool.poetry.group.docs.dependencies]
-mkdocs = "1.4.2"
-pymdown-extensions = "9.11"
+mkdocs = "1.4.3"
+pymdown-extensions = "10.0.1"
 mkdocs-mermaid2-plugin = "0.6.0"
 
 [tool.poetry.group.lint.dependencies]
-mypy = "1.2.0"
+mypy = "1.4.1"
 
 [tool.poetry.scripts]
 dndfog = "dndfog.main:start"

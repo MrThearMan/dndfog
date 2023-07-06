@@ -16,4 +16,4 @@ jobs:
     with:
       python-version: "3.11"
       os: "windows-latest"
-      poetry-version: "1.4.2"
+      poetry-version: "1.5.1"

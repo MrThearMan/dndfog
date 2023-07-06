@@ -19,4 +19,4 @@ jobs:
       os: '["windows-latest"]'
       submit-python-version: "3.11"
       submit-os: "windows-latest"
-      poetry-version: "1.4.2"
+      poetry-version: "1.5.1"
