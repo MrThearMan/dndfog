@@ -171,7 +171,7 @@ def open_data_file(state: ProgramState) -> None:
         data: SaveData = json.load(f)
 
     state.map.gridsize = int(data["map"]["gridsize"])
-    state.map.removed_fog = {(x, y) for x, y in data["map"]["removed_fog"]}
+    state.map.removed_fog = set(data["map"]["removed_fog"])
     state.map.original_image = deserialize_map(data["map"]["image"])
     state.map.image = pygame.transform.scale(state.map.original_image, data["map"]["image"]["zoom"])
     state.map.camera = tuple(data["map"]["camera"])
