@@ -18,7 +18,8 @@ def start() -> None:
         )
 
     if not map_file:
-        raise SystemExit("No file selected.")
+        msg = "No file selected."
+        raise SystemExit(msg)
 
     run(map_file)
 

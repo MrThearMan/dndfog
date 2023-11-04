@@ -27,7 +27,7 @@ def draw_text_centered(
     color=(222, 222, 222),
 ) -> int:
     """Draw text in the center of the given rectangle."""
-    text_box = font.render(text, True, color)
+    text_box = font.render(text, True, color)  # noqa: FBT003
     width, height = text_box.get_size()
     x = (rect[2] - width) // 2
     y = (rect[3] - height) // 2

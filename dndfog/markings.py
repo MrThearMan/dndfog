@@ -46,13 +46,11 @@ def interpolate_line(
     if abs(point_2[1] - point_1[1]) < abs(point_2[0] - point_1[0]):
         if point_1[0] > point_2[0]:
             yield from _interpolate_low(point_2, point_1)
-        else:
-            yield from _interpolate_low(point_1, point_2)
-    else:
-        if point_1[1] > point_2[1]:
-            yield from _interpolate_high(point_2, point_1)
-        else:
-            yield from _interpolate_high(point_1, point_2)
+        yield from _interpolate_low(point_1, point_2)
+
+    if point_1[1] > point_2[1]:
+        yield from _interpolate_high(point_2, point_1)
+    yield from _interpolate_high(point_1, point_2)
 
 
 def _interpolate_high(point_1: tuple[int, int], point_2: tuple[int, int]) -> Generator[tuple[int, int], Any, None]:

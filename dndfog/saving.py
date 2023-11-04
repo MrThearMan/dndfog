@@ -39,24 +39,26 @@ def load_map(map_file: str, state: ProgramState) -> None:
         return
 
     # Load background image
-    elif extension in [".png", ".jpg", ".jpeg"]:
+    if extension in [".png", ".jpg", ".jpeg"]:
         state.map.image = pygame.image.load(map_file).convert_alpha()
         state.map.image.set_colorkey((255, 255, 255))
         state.map.original_image = state.map.image.copy()
         return
 
-    raise RuntimeError("Unsupported file type.")
+    msg = "Unsupported file type."
+    raise RuntimeError(msg)
 
 
 def open_file_dialog(
-    title: str = None,
+    title: Optional[str] = None,
     directory: Optional[str] = None,
     default_name: str = "",
     default_ext: str = "",
-    ext: list[tuple[str, str]] = None,
+    ext: Optional[list[tuple[str, str]]] = None,
     multiselect: bool = False,
 ) -> str | list[str] | None:
-    """Open a file open dialog at a specified directory.
+    """
+    Open a file open dialog at a specified directory.
     :param title: Dialog title.
     :param directory: Directory to open file dialog in.
     :param default_name: Default file name.
@@ -69,7 +71,6 @@ def open_file_dialog(
              None if file open dialog canceled.
     :raises IOError: File open dialog failed.
     """
-
     # https://programtalk.com/python-examples/win32gui.GetOpenFileNameW/
 
     if directory is None:
@@ -80,9 +81,9 @@ def open_file_dialog(
         flags = flags | OFN_ALLOWMULTISELECT
 
     if ext is None:
-        ext = "All Files\0*.*\0"
+        ext_filter = "All Files\0*.*\0"
     else:
-        ext = "".join([f"{name}\0*.{extension}\0" for name, extension in ext])
+        ext_filter = "".join([f"{name}\0*.{extension}\0" for name, extension in ext])
 
     try:
         file_path, _, _ = GetOpenFileNameW(
@@ -91,36 +92,35 @@ def open_file_dialog(
             Flags=flags,
             Title=title,
             MaxFile=2**16,
-            Filter=ext,
+            Filter=ext_filter,
             DefExt=default_ext,
         )
-
-        paths = file_path.split("\0")
-
-        if len(paths) == 1:
-            return paths[0]
-        else:
-            for i in range(1, len(paths)):
-                paths[i] = os.path.join(paths[0], paths[i])
-            paths.pop(0)
-
-        return paths
-
-    except pywintypes.error as e:  # noqa
+    except pywintypes.error as e:
         if e.winerror == 0:
             return None
-        else:
-            raise IOError() from e
+        raise IOError from e
+
+    paths = file_path.split("\0")
+
+    if len(paths) == 1:
+        return paths[0]
+
+    for i in range(1, len(paths)):
+        paths[i] = os.path.join(paths[0], paths[i])
+    paths.pop(0)
+
+    return paths
 
 
 def save_file_dialog(
-    title: str = None,
+    title: Optional[str] = None,
     directory: Optional[str] = None,
     default_name: str = "",
     default_ext: str = "",
-    ext: list[tuple[str, str]] = None,
+    ext: Optional[list[tuple[str, str]]] = None,
 ) -> str | None:
-    """Open a file save dialog at a specified directory.
+    """
+    Open a file save dialog at a specified directory.
     :param title: Dialog title.
     :param directory: Directory to open file dialog in.
     :param default_name: Default file name.
@@ -130,7 +130,6 @@ def save_file_dialog(
     :return: Path file should be save to. None if file save dialog canceled.
     :raises IOError: File save dialog failed.
     """
-
     # https://programtalk.com/python-examples/win32gui.GetSaveFileNameW/
 
     if directory is None:
@@ -150,14 +149,12 @@ def save_file_dialog(
             Filter=ext,
             DefExt=default_ext,
         )
-
-        return file_path
-
-    except pywintypes.error as e:  # noqa
+    except pywintypes.error as e:
         if e.winerror == 0:
             return None
-        else:
-            raise IOError() from e
+        raise IOError from e
+    else:
+        return file_path
 
 
 def save_data_file(state: ProgramState) -> None:
@@ -204,11 +201,7 @@ def open_data_file(state: ProgramState) -> None:
 
 
 def serialize_map(surface: pygame.Surface) -> str:
-    return base64.b64encode(
-        gzip.compress(
-            pygame.image.tostring(surface, "RGBA"),  # type: ignore
-        ),
-    ).decode()
+    return base64.b64encode(gzip.compress(pygame.image.tostring(surface, "RGBA"))).decode()
 
 
 def deserialize_map(data: BackgroundImage) -> pygame.Surface:
@@ -224,5 +217,4 @@ def get_default_filename(state: ProgramState) -> str:
         return ""
 
     filename = state.file.rsplit("/", maxsplit=1)[-1]
-    filename = filename.rsplit(".", maxsplit=1)[0]
-    return filename
+    return filename.rsplit(".", maxsplit=1)[0]

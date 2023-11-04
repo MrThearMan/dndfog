@@ -1,4 +1,5 @@
 import sys
+from contextlib import suppress
 
 import pygame
 
@@ -144,10 +145,8 @@ def handle_left_mouse_button_down(event: MouseButtonEvent, loop: LoopData, state
     # Select a tool from the toolbar
     if state.show.toolbar and 0 <= loop.mouse_pos[1] < TOOLBAR_HEIGHT:
         item_clicked, _ = grid_position(loop.mouse_pos, (0, 0), TOOLBAR_HEIGHT)
-        try:
+        with suppress(ValueError):
             state.selected.tool = Tool(item_clicked)
-        except ValueError:
-            pass
 
     # Use an option from the toolbar
     elif state.show.toolbar and TOOLBAR_HEIGHT <= loop.mouse_pos[1] < TOOLBAR_HEIGHT * 2:

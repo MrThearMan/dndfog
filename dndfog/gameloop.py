@@ -36,7 +36,7 @@ def run(map_file: str) -> None:
         )
 
         for event in pygame.event.get():
-            handle_event(event, loop, state)  # type: ignore
+            handle_event(event, loop, state)
 
         draw(display, loop, state)
         clock.tick(frame_rate)

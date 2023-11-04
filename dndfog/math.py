@@ -1,7 +1,7 @@
 import pygame
 
 
-def approx(value: int | float, /) -> int:
+def approx(value: float, /) -> int:
     return int(value) if value > 0 else int(value - 1)
 
 

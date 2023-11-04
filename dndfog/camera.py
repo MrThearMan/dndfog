@@ -8,8 +8,7 @@ def zoom_camera(
     old_gridsize: int,
 ) -> tuple[int, int]:
     camera_delta = zoom_at_mouse_pos(mouse_position, camera, old_gridsize, new_gridsize)
-    camera = camera[0] - camera_delta[0], camera[1] - camera_delta[1]
-    return camera
+    return camera[0] - camera_delta[0], camera[1] - camera_delta[1]
 
 
 def move_camera(
@@ -43,9 +42,7 @@ def zoom_at_mouse_pos(
     old_grid_place = absolute_mouse_position[0] / old_gridsize, absolute_mouse_position[1] / old_gridsize
     new_grid_place = absolute_mouse_position[0] / new_gridsize, absolute_mouse_position[1] / new_gridsize
 
-    camera_delta = (
+    return (
         round((new_grid_place[0] - old_grid_place[0]) * new_gridsize),
         round((new_grid_place[1] - old_grid_place[1]) * new_gridsize),
     )
-
-    return camera_delta

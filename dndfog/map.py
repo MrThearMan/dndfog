@@ -10,8 +10,7 @@ def zoom_map(
     cur_x, cur_y = image.get_size()
     rel_x, rel_y = cur_x / old_gridsize, cur_y / old_gridsize
     new_x, new_y = max(round(rel_x * new_gridsize), 1), max(round(rel_y * new_gridsize), 1)
-    dnd_map = pygame.transform.scale(original_image, (new_x, new_y))
-    return dnd_map
+    return pygame.transform.scale(original_image, (new_x, new_y))
 
 
 def move_map(

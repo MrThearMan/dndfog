@@ -7,8 +7,7 @@
 .PHONY: test
 .PHONY: tox
 .PHONY: hook
-.PHONY: pre-commit
-.PHONY: pre-commit-update
+.PHONY: lint
 .PHONY: mypy
 .PHONY: build
 .PHONY: Makefile
@@ -33,8 +32,7 @@ define helptext
   test <name>          Run all tests maching the given <name>
   tox                  Run all tests with tox.
   hook                 Install pre-commit hook.
-  pre-commit           Run pre-commit hooks on all files.
-  pre-commit-update    Update all pre-commit hooks to latest versions.
+  lint                 Run pre-commit hooks on all files.
   mypy                 Run mypy on all files.
   build                Build executable with pyinstaller.
 
@@ -67,11 +65,8 @@ tox:
 hook:
 	@poetry run pre-commit install
 
-pre-commit:
+lint:
 	@poetry run pre-commit run --all-files
-
-pre-commit-update:
-	@poetry run pre-commit autoupdate
 
 mypy:
 	@poetry run mypy dndfog/

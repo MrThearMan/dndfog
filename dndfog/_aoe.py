@@ -93,7 +93,7 @@ def scale_aoes(
     for place, aoe in aoes.items():
         cur_radius = aoes[place]["glow"].radius
         rel_grid_radius = round(cur_radius / old_gridsize, 2)
-        new_radius = max(int(rel_grid_radius * new_gridsize), max(new_gridsize // 2, 1))
+        new_radius = max(int(rel_grid_radius * new_gridsize), new_gridsize // 2, 1)
 
         aoes[place]["glow"] = Glow(
             radius_range=range(new_radius, new_radius - 1, -1),
