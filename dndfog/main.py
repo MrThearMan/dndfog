@@ -1,4 +1,4 @@
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 
 from dndfog.gameloop import run
 from dndfog.saving import open_file_dialog
@@ -6,8 +6,11 @@ from dndfog.saving import open_file_dialog
 
 def start() -> None:
     parser = ArgumentParser()
-    parser.add_argument("file", default=None)
-    args = parser.parse_args()
+    parser.add_argument("file", default=None, help="The file to load")
+    try:
+        args = parser.parse_args()
+    except AttributeError:  # exe opened without args
+        args = Namespace(file=None)
 
     if args.file is not None:
         map_file = str(args.file)
