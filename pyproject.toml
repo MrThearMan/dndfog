@@ -44,7 +44,7 @@ exclude = [
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
 pywin32 = ">=306"
-pygame-ce = ">=2.3.0"
+pygame-ce = ">=2.4.0"
 
 [tool.poetry.group.test.dependencies]
 pytest = "7.4.4"
