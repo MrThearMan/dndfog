@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dndfog"
-version = "0.6.4"
+version = "0.6.5"
 description = "DND battle map with fog of war"
 authors = [
     "Matti Lamppu <lamppu.matti.akseli@gmail.com>",
