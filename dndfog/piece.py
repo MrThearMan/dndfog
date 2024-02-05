@@ -41,7 +41,7 @@ def remove_piece(
     pieces: dict[tuple[int, int], PieceData],
     colors: list[tuple[int, int, int]],
 ) -> None:
-    piece_data: PieceData | None = pieces.get(next_place, None)
+    piece_data: PieceData | None = pieces.get(next_place)
     if piece_data is not None:
         place = piece_data["parent"]
         size = piece_data["size"]
