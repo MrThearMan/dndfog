@@ -49,10 +49,10 @@ pygame-ce = ">=2.4.0"
 [tool.poetry.group.test.dependencies]
 pytest = "8.0.0"
 coverage = "7.4.1"
-pre-commit = "3.6.0"
+pre-commit = "3.6.1"
 tox = "4.12.1"
 tox-gh-actions = "3.2.0"
-pyinstaller = "6.3.0"
+pyinstaller = "6.4.0"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "1.5.3"
