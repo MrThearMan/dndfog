@@ -55,8 +55,8 @@ tox-gh-actions = "3.2.0"
 pyinstaller = "6.6.0"
 
 [tool.poetry.group.docs.dependencies]
-mkdocs = "1.5.3"
-pymdown-extensions = "10.7.1"
+mkdocs = "1.6.0"
+pymdown-extensions = "10.8"
 mkdocs-mermaid2-plugin = "1.1.1"
 
 [tool.poetry.group.lint.dependencies]
