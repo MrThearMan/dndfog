@@ -12,7 +12,7 @@ on:
 
 jobs:
   docs:
-    uses: MrThearMan/CI/.github/workflows/docs.yml@v0.4.9
+    uses: MrThearMan/CI/.github/workflows/docs.yml@v0.4.11
     with:
       python-version: "3.11"
       os: "windows-latest"
