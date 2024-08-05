@@ -48,7 +48,7 @@ pygame-ce = ">=2.4.0"
 
 [tool.poetry.group.test.dependencies]
 pytest = "8.3.2"
-coverage = "7.6.0"
+coverage = "7.6.1"
 pre-commit = "3.8.0"
 tox = "4.16.0"
 tox-gh-actions = "3.2.0"
@@ -60,7 +60,7 @@ pymdown-extensions = "10.9"
 mkdocs-mermaid2-plugin = "1.1.1"
 
 [tool.poetry.group.lint.dependencies]
-mypy = "1.11.0"
+mypy = "1.11.1"
 
 [tool.poetry.scripts]
 dndfog = "dndfog.main:start"
