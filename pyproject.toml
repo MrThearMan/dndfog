@@ -48,7 +48,7 @@ pygame-ce = ">=2.4.0"
 
 [tool.poetry.group.test.dependencies]
 pytest = "8.3.3"
-coverage = "7.6.7"
+coverage = "7.6.8"
 pre-commit = "4.0.1"
 tox = "4.23.2"
 tox-gh-actions = "3.2.0"
