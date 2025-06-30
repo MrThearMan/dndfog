@@ -7,7 +7,7 @@ on:
 
 jobs:
   release:
-    uses: MrThearMan/CI/.github/workflows/release.yml@v0.4.15
+    uses: MrThearMan/CI/.github/workflows/release.yml@v0.4.16
     with:
       python-version: "3.11"
       os: "windows-latest"
