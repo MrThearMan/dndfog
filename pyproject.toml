@@ -52,7 +52,7 @@ coverage = "7.10.6"
 pre-commit = "4.3.0"
 tox = "4.30.2"
 tox-gh-actions = "3.3.0"
-pyinstaller = "6.15.0"
+pyinstaller = "6.16.0"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "1.6.1"
@@ -60,7 +60,7 @@ pymdown-extensions = "10.16.1"
 mkdocs-mermaid2-plugin = "1.2.2"
 
 [tool.poetry.group.lint.dependencies]
-mypy = "1.17.1"
+mypy = "1.18.1"
 
 [tool.poetry.scripts]
 dndfog = "dndfog.main:start"
