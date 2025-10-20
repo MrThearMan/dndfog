@@ -48,7 +48,7 @@ pygame-ce = ">=2.4.0"
 
 [tool.poetry.group.test.dependencies]
 pytest = "8.4.2"
-coverage = "7.10.7"
+coverage = "7.11.0"
 pre-commit = "4.3.0"
 tox = "4.31.0"
 tox-gh-actions = "3.4.0"
@@ -57,7 +57,7 @@ pyinstaller = "6.16.0"
 [tool.poetry.group.docs.dependencies]
 mkdocs = "1.6.1"
 pymdown-extensions = "10.16.1"
-mkdocs-mermaid2-plugin = "1.2.2"
+mkdocs-mermaid2-plugin = "1.2.3"
 
 [tool.poetry.group.lint.dependencies]
 mypy = "1.18.2"
