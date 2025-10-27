@@ -50,8 +50,8 @@ pygame-ce = ">=2.4.0"
 pytest = "8.4.2"
 coverage = "7.11.0"
 pre-commit = "4.3.0"
-tox = "4.31.0"
-tox-gh-actions = "3.4.0"
+tox = "4.32.0"
+tox-gh-actions = "3.5.0"
 pyinstaller = "6.16.0"
 
 [tool.poetry.group.docs.dependencies]
