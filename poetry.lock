@@ -1259,14 +1259,14 @@ files = [
 
 [[package]]
 name = "tox"
-version = "4.31.0"
+version = "4.32.0"
 description = "tox is a generic virtualenv management and test command line tool"
 optional = false
 python-versions = ">=3.10"
 groups = ["test"]
 files = [
-    {file = "tox-4.31.0-py3-none-any.whl", hash = "sha256:328f392e6567e46cb0f9b625679456744dde940287dd1b39117627dc4b21d5da"},
-    {file = "tox-4.31.0.tar.gz", hash = "sha256:266381ffef35615ec0d40ae4969a9e43b506017597c0413d6545a603cc8c7561"},
+    {file = "tox-4.32.0-py3-none-any.whl", hash = "sha256:451e81dc02ba8d1ed20efd52ee409641ae4b5d5830e008af10fe8823ef1bd551"},
+    {file = "tox-4.32.0.tar.gz", hash = "sha256:1ad476b5f4d3679455b89a992849ffc3367560bbc7e9495ee8a3963542e7c8ff"},
 ]
 
 [package.dependencies]
@@ -1284,14 +1284,14 @@ virtualenv = ">=20.34"
 
 [[package]]
 name = "tox-gh-actions"
-version = "3.4.0"
+version = "3.5.0"
 description = "Seamless integration of tox into GitHub Actions"
 optional = false
 python-versions = ">=3.7"
 groups = ["test"]
 files = [
-    {file = "tox_gh_actions-3.4.0-py3-none-any.whl", hash = "sha256:31abb90827472181c17ed07385493e4614fd8c03955e43fef42c06a366712850"},
-    {file = "tox_gh_actions-3.4.0.tar.gz", hash = "sha256:76e80610fe5cda2f57af0ef45537d8f86c36d0bb8823feb20f85d30f4a7600ce"},
+    {file = "tox_gh_actions-3.5.0-py3-none-any.whl", hash = "sha256:070790114c92f4c94337047515ca5e077ceb269a5cb9366e0a0b3440a024eca1"},
+    {file = "tox_gh_actions-3.5.0.tar.gz", hash = "sha256:cc8e148c4513042e5019973e5672594c3df241b035e7fb550f6f778588110051"},
 ]
 
 [package.dependencies]
@@ -1395,4 +1395,4 @@ watchmedo = ["PyYAML (>=3.10)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.13"
-content-hash = "4b14579e150994e2239b195772caacfb3477a4002adc00aef62b40bec1eb97a1"
+content-hash = "09a562ea602d3aeeb30df3d3eedd69a1e5abd56185e35b0e5a75a1717dd67ecb"
