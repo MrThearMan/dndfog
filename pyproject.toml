@@ -50,7 +50,7 @@ pygame-ce = ">=2.4.0"
 pytest = "9.0.2"
 coverage = "7.13.1"
 pre-commit = "4.5.1"
-tox = "4.33.0"
+tox = "4.34.1"
 tox-gh-actions = "3.5.0"
 pyinstaller = "6.17.0"
 
