@@ -52,7 +52,7 @@ coverage = "7.13.1"
 pre-commit = "4.5.1"
 tox = "4.34.1"
 tox-gh-actions = "3.5.0"
-pyinstaller = "6.17.0"
+pyinstaller = "6.18.0"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "1.6.1"
