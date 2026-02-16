@@ -50,13 +50,13 @@ pygame-ce = ">=2.4.0"
 pytest = "9.0.2"
 coverage = "7.13.4"
 pre-commit = "4.5.1"
-tox = "4.34.1"
+tox = "4.36.0"
 tox-gh-actions = "3.5.0"
-pyinstaller = "6.18.0"
+pyinstaller = "6.19.0"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "1.6.1"
-pymdown-extensions = "10.20.1"
+pymdown-extensions = "10.21"
 mkdocs-mermaid2-plugin = "1.2.3"
 
 [tool.poetry.group.lint.dependencies]
