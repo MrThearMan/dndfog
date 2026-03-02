@@ -71,18 +71,6 @@ files = [
 ]
 
 [[package]]
-name = "chardet"
-version = "5.2.0"
-description = "Universal encoding detector for Python 3"
-optional = false
-python-versions = ">=3.7"
-groups = ["test"]
-files = [
-    {file = "chardet-5.2.0-py3-none-any.whl", hash = "sha256:e1cf59446890a00105fe7b7912492ea04b6e6f06d4b742b2c788469e34c82970"},
-    {file = "chardet-5.2.0.tar.gz", hash = "sha256:1b3b6ff479a8c414bc3fa2c0852995695c4a026dcd6d0633b2dd092ca39c1cf7"},
-]
-
-[[package]]
 name = "charset-normalizer"
 version = "3.3.2"
 description = "The Real First Universal Charset Detector. Open, modern and actively maintained alternative to Chardet."
@@ -371,14 +359,14 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "filelock"
-version = "3.24.2"
+version = "3.25.0"
 description = "A platform independent file lock."
 optional = false
 python-versions = ">=3.10"
 groups = ["test"]
 files = [
-    {file = "filelock-3.24.2-py3-none-any.whl", hash = "sha256:667d7dc0b7d1e1064dd5f8f8e80bdac157a6482e8d2e02cd16fd3b6b33bd6556"},
-    {file = "filelock-3.24.2.tar.gz", hash = "sha256:c22803117490f156e59fafce621f0550a7a853e2bbf4f87f112b11d469b6c81b"},
+    {file = "filelock-3.25.0-py3-none-any.whl", hash = "sha256:5ccf8069f7948f494968fc0713c10e5c182a9c9d9eef3a636307a20c2490f047"},
+    {file = "filelock-3.25.0.tar.gz", hash = "sha256:8f00faf3abf9dc730a1ffe9c354ae5c04e079ab7d3a683b7c32da5dd05f26af3"},
 ]
 
 [[package]]
@@ -1120,6 +1108,26 @@ files = [
 six = ">=1.5"
 
 [[package]]
+name = "python-discovery"
+version = "1.1.0"
+description = "Python interpreter discovery"
+optional = false
+python-versions = ">=3.8"
+groups = ["test"]
+files = [
+    {file = "python_discovery-1.1.0-py3-none-any.whl", hash = "sha256:a162893b8809727f54594a99ad2179d2ede4bf953e12d4c7abc3cc9cdbd1437b"},
+    {file = "python_discovery-1.1.0.tar.gz", hash = "sha256:447941ba1aed8cc2ab7ee3cb91be5fc137c5bdbb05b7e6ea62fbdcb66e50b268"},
+]
+
+[package.dependencies]
+filelock = ">=3.15.4"
+platformdirs = ">=4.3.6,<5"
+
+[package.extras]
+docs = ["furo (>=2025.12.19)", "sphinx (>=9.1)", "sphinx-autodoc-typehints (>=3.6.3)", "sphinxcontrib-mermaid (>=2)"]
+testing = ["covdefaults (>=2.3)", "coverage (>=7.5.4)", "pytest (>=8.3.5)", "pytest-mock (>=3.14)", "setuptools (>=75.1)"]
+
+[[package]]
 name = "pywin32"
 version = "311"
 description = "Python for Window Extensions"
@@ -1361,28 +1369,27 @@ files = [
 
 [[package]]
 name = "tox"
-version = "4.36.0"
+version = "4.47.0"
 description = "tox is a generic virtualenv management and test command line tool"
 optional = false
 python-versions = ">=3.10"
 groups = ["test"]
 files = [
-    {file = "tox-4.36.0-py3-none-any.whl", hash = "sha256:5d5e00cf5c18d0a65f18fa2e4b4cad4f7415b589e29d1b40d62910e33433b572"},
-    {file = "tox-4.36.0.tar.gz", hash = "sha256:dfd56fd563d79b866fa4800a9ea75ec40b80fb14c6238e38e4949537b859aa0e"},
+    {file = "tox-4.47.0-py3-none-any.whl", hash = "sha256:79260c47814086313eea516c6cd4ce374f93c19be2de6125e7d330356a000364"},
+    {file = "tox-4.47.0.tar.gz", hash = "sha256:db08368214f6f44b3e9b6c6e937140e25a4b0cea63f8489bf1c9b6b34d3e42e3"},
 ]
 
 [package.dependencies]
 cachetools = ">=7.0.1"
-chardet = ">=5.2"
 colorama = ">=0.4.6"
-filelock = ">=3.24"
+filelock = ">=3.24.3"
 packaging = ">=26"
-platformdirs = ">=4.9.1"
+platformdirs = ">=4.9.2"
 pluggy = ">=1.6"
 pyproject-api = ">=1.10"
 tomli = {version = ">=2.4", markers = "python_version < \"3.11\""}
 typing-extensions = {version = ">=4.15", markers = "python_version < \"3.11\""}
-virtualenv = ">=20.36.1"
+virtualenv = ">=20.39"
 
 [package.extras]
 completion = ["argcomplete (>=3.6.3)"]
@@ -1437,25 +1444,22 @@ zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
 name = "virtualenv"
-version = "20.37.0"
+version = "21.1.0"
 description = "Virtual Python Environment builder"
 optional = false
 python-versions = ">=3.8"
 groups = ["test"]
 files = [
-    {file = "virtualenv-20.37.0-py3-none-any.whl", hash = "sha256:5d3951c32d57232ae3569d4de4cc256c439e045135ebf43518131175d9be435d"},
-    {file = "virtualenv-20.37.0.tar.gz", hash = "sha256:6f7e2064ed470aa7418874e70b6369d53b66bcd9e9fd5389763e96b6c94ccb7c"},
+    {file = "virtualenv-21.1.0-py3-none-any.whl", hash = "sha256:164f5e14c5587d170cf98e60378eb91ea35bf037be313811905d3a24ea33cc07"},
+    {file = "virtualenv-21.1.0.tar.gz", hash = "sha256:1990a0188c8f16b6b9cf65c9183049007375b26aad415514d377ccacf1e4fb44"},
 ]
 
 [package.dependencies]
 distlib = ">=0.3.7,<1"
 filelock = {version = ">=3.24.2,<4", markers = "python_version >= \"3.10\""}
 platformdirs = ">=3.9.1,<5"
+python-discovery = ">=1"
 typing-extensions = {version = ">=4.13.2", markers = "python_version < \"3.11\""}
-
-[package.extras]
-docs = ["furo (>=2023.7.26)", "pre-commit-uv (>=4.1.4)", "proselint (>=0.13)", "sphinx (>=7.1.2,!=7.3)", "sphinx-argparse (>=0.4)", "sphinx-autodoc-typehints (>=3.6.2)", "sphinx-copybutton (>=0.5.2)", "sphinx-inline-tabs (>=2025.12.21.14)", "sphinxcontrib-mermaid (>=2)", "sphinxcontrib-towncrier (>=0.2.1a0)", "towncrier (>=23.6)"]
-test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess (>=1)", "flaky (>=3.7)", "packaging (>=23.1)", "pytest (>=7.4)", "pytest-env (>=0.8.2)", "pytest-freezer (>=0.4.8) ; platform_python_implementation == \"PyPy\" or platform_python_implementation == \"GraalVM\" or platform_python_implementation == \"CPython\" and sys_platform == \"win32\" and python_version >= \"3.13\"", "pytest-mock (>=3.11.1)", "pytest-randomly (>=3.12)", "pytest-timeout (>=2.1)", "pytest-xdist (>=3.5)", "setuptools (>=68)", "time-machine (>=2.10) ; platform_python_implementation == \"CPython\""]
 
 [[package]]
 name = "watchdog"
@@ -1500,4 +1504,4 @@ watchmedo = ["PyYAML (>=3.10)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.13"
-content-hash = "38d2020c1993d6c04a3e62d66f900281b30334a99047d5ca57b6b1c78f9dc31d"
+content-hash = "4724606cbee82e52be851aa7925262151cfdfa6925d53dddd985d1ab28558121"
