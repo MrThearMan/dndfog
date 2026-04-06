@@ -50,7 +50,7 @@ pygame-ce = ">=2.4.0"
 pytest = "9.0.2"
 coverage = "7.13.5"
 pre-commit = "4.5.1"
-tox = "4.51.0"
+tox = "4.52.0"
 tox-gh-actions = "3.5.0"
 pyinstaller = "6.19.0"
 
@@ -60,7 +60,7 @@ pymdown-extensions = "10.21.2"
 mkdocs-mermaid2-plugin = "1.2.3"
 
 [tool.poetry.group.lint.dependencies]
-mypy = "1.19.1"
+mypy = "1.20.0"
 
 [tool.poetry.scripts]
 dndfog = "dndfog.main:start"
