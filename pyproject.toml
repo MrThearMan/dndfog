@@ -47,12 +47,12 @@ pywin32 = ">=306"
 pygame-ce = ">=2.4.0"
 
 [tool.poetry.group.test.dependencies]
-pytest = "9.0.3"
+pytest = "9.1.0"
 coverage = "7.14.1"
 pre-commit = "4.6.0"
 tox = "4.55.1"
 tox-gh-actions = "3.5.0"
-pyinstaller = "6.20.0"
+pyinstaller = "6.21.0"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "1.6.1"
