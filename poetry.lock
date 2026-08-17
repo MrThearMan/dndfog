@@ -976,14 +976,14 @@ testing = ["coverage", "pytest", "pytest-benchmark"]
 
 [[package]]
 name = "pre-commit"
-version = "4.6.1"
+version = "4.6.2"
 description = "A framework for managing and maintaining multi-language pre-commit hooks."
 optional = false
 python-versions = ">=3.10"
 groups = ["test"]
 files = [
-    {file = "pre_commit-4.6.1-py2.py3-none-any.whl", hash = "sha256:0e3b2942510d1fb34eec167a3ec57331bf8442122f1153a9fb8b58f5c49b2717"},
-    {file = "pre_commit-4.6.1.tar.gz", hash = "sha256:03e809865c7d178b9979d06c761fcbfe6808fdaded8581a745bb110e52050421"},
+    {file = "pre_commit-4.6.2-py2.py3-none-any.whl", hash = "sha256:e2dde9a75d3bce11bd3831c26d134df00a2803c1d818be6a0383c3dcda25dc4e"},
+    {file = "pre_commit-4.6.2.tar.gz", hash = "sha256:8f5d7bfb021ecdbcd9d49d89847082dd24172ccde534390081a679ad046e2441"},
 ]
 
 [package.dependencies]
@@ -995,51 +995,59 @@ virtualenv = ">=20.10.0"
 
 [[package]]
 name = "pygame-ce"
-version = "2.5.7"
+version = "2.5.8"
 description = "Python Game Development"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "pygame_ce-2.5.7-cp310-cp310-macosx_10_11_universal2.whl", hash = "sha256:77d7d27cc46b846c814f1d85366d5af066483917f26433a10a949e74f471dfeb"},
-    {file = "pygame_ce-2.5.7-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:9da68411fd4a1bb50375a40cc0ee5c0f83da51450acda8a87e7a83837670f657"},
-    {file = "pygame_ce-2.5.7-cp310-cp310-manylinux2014_i686.manylinux_2_17_i686.whl", hash = "sha256:1f9a60af653f367807dc50059122a5f6cbd1b5de68233306421b0c3218bcc92d"},
-    {file = "pygame_ce-2.5.7-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:322052db99d25f7faca0502e0b2a905eb68c10ec5f7a1fd59803c4175f1d1269"},
-    {file = "pygame_ce-2.5.7-cp310-cp310-win32.whl", hash = "sha256:275910c7f26baa7bf52b8e0ebd9301fe968806b9bd777506d6fc17e2bbcf3121"},
-    {file = "pygame_ce-2.5.7-cp310-cp310-win_amd64.whl", hash = "sha256:de75f752d6a090839ebdc69b3365478d0f8a98ea02d1eee417a4a1436c1b5168"},
-    {file = "pygame_ce-2.5.7-cp311-cp311-macosx_10_11_universal2.whl", hash = "sha256:903eab0a59563fd0d134e502a11c9f144d21dc93ee1f5b4b4eec31f8745142b4"},
-    {file = "pygame_ce-2.5.7-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:ec2f2d8c95d1a5c9bfc9ffbae4c356fd71bcbc4fde70e59e3d050261bacfe908"},
-    {file = "pygame_ce-2.5.7-cp311-cp311-manylinux2014_i686.manylinux_2_17_i686.whl", hash = "sha256:a980109b5aee984b78c884d607d4a406a92b63a8a7044180d0e2f8a26a7276a7"},
-    {file = "pygame_ce-2.5.7-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:d35105bf5a453ffb64333bc3be685f8c55cbc4695c05733a68849a92345dcb45"},
-    {file = "pygame_ce-2.5.7-cp311-cp311-win32.whl", hash = "sha256:ecac266ccd459e354d693f2150a065fc695a6ffcdf15eaca06709620bb837fea"},
-    {file = "pygame_ce-2.5.7-cp311-cp311-win_amd64.whl", hash = "sha256:5ca51a671b5b6cfd747399f54fa91259d4b01980f517c9e8043f5c3e795f06ac"},
-    {file = "pygame_ce-2.5.7-cp311-cp311-win_arm64.whl", hash = "sha256:1f5a7e5d08f26dc8e4a899be502e6ef06ac5a2800a442750267141bca7703ba7"},
-    {file = "pygame_ce-2.5.7-cp312-cp312-macosx_10_13_universal2.whl", hash = "sha256:dca2f8ba56bf3b4b8c73c4863d0603773403f4f66bc2fe25784ea74aee3fffc3"},
-    {file = "pygame_ce-2.5.7-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:4dc989462faf2c5947881f708fa406d7ac13c1bc987c1588d630ca62ad369989"},
-    {file = "pygame_ce-2.5.7-cp312-cp312-manylinux2014_i686.manylinux_2_17_i686.whl", hash = "sha256:538689d77c44f5dbefc0abeab5b9806d6c90ebc6d64078736c8a4c731f08b37e"},
-    {file = "pygame_ce-2.5.7-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:0d8fa8822c0f4b5ae6b44ada7be9f2193fd512da1381c37fa3c5bda8971d64cb"},
-    {file = "pygame_ce-2.5.7-cp312-cp312-win32.whl", hash = "sha256:604207c8813a594919bb7e6d3ed3834f79aa099d2d648e8a8fc3d786ad3fa1c8"},
-    {file = "pygame_ce-2.5.7-cp312-cp312-win_amd64.whl", hash = "sha256:b6b7eec2779fac11ed265a18ab926b3829654120a5c9a07c36eeedeb012b8c3c"},
-    {file = "pygame_ce-2.5.7-cp312-cp312-win_arm64.whl", hash = "sha256:eb99a8a7185057064163610b3ca3e1d3307f0eb3dfff6e19556fa5132c6bca87"},
-    {file = "pygame_ce-2.5.7-cp313-cp313-macosx_10_13_universal2.whl", hash = "sha256:8766985d802017e150fcfb9adc659967d8548a961d491b8974f0748412cc0427"},
-    {file = "pygame_ce-2.5.7-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:58eabfc184dd28c682e5e6ccfce01224bb12653c6648babcd0bb9d9bd662d938"},
-    {file = "pygame_ce-2.5.7-cp313-cp313-manylinux2014_i686.manylinux_2_17_i686.whl", hash = "sha256:92d5732cd512c8ec0b47e9a3e6c683fb811bdf2090362580778ce698222a64ab"},
-    {file = "pygame_ce-2.5.7-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:48e9a4ece43b08adc8ffb0bbbe0fe183eef4bb501a7d31552ae7398592ec0a82"},
-    {file = "pygame_ce-2.5.7-cp313-cp313-win32.whl", hash = "sha256:f6439100bdee81da96f5acffb280f20511c93dd67178d8a8cf29d6cfd1aa46dd"},
-    {file = "pygame_ce-2.5.7-cp313-cp313-win_amd64.whl", hash = "sha256:25047c97760fc640a6a8bbfdf3398c5825adfd55986a7523a65c95a1fb61d759"},
-    {file = "pygame_ce-2.5.7-cp313-cp313-win_arm64.whl", hash = "sha256:f5a7197096ef82d588539f13b0f7ade767f800c7b0b015a94e386f488e1039f6"},
-    {file = "pygame_ce-2.5.7-cp314-cp314-macosx_10_15_universal2.whl", hash = "sha256:addfbf7d119647eec157d611f463e5d572836fa74d0d222c59210294ed618b9d"},
-    {file = "pygame_ce-2.5.7-cp314-cp314-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:1c92feb289e34ac323a7b62b91d230a4e32b44059c4d7fb95631e504b1d9b365"},
-    {file = "pygame_ce-2.5.7-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:5c1ed4100311015cc67d24fe4e4d7c2f4cb25c34e043545061271c1d018c02d4"},
-    {file = "pygame_ce-2.5.7-cp314-cp314-win32.whl", hash = "sha256:1b7e641af3aeac92bb7e4df1402d6802271f4bd09c747d2665f154ef9b07a4e6"},
-    {file = "pygame_ce-2.5.7-cp314-cp314-win_amd64.whl", hash = "sha256:595f4257c15fed11cd816ae0bfabad3d99f8f04a000d7d164a22c0f9afd6cb65"},
-    {file = "pygame_ce-2.5.7-cp314-cp314-win_arm64.whl", hash = "sha256:3e6ce74fd5a5f146f1bcf0224ae3e880c733917a9edbb53f790329d235520433"},
-    {file = "pygame_ce-2.5.7-pp311-pypy311_pp73-macosx_10_15_universal2.whl", hash = "sha256:8718bc75cd4ec4bd2b0b4862e5c615b119a45038e4572c9030731db3c6740cfe"},
-    {file = "pygame_ce-2.5.7-pp311-pypy311_pp73-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:6e4289438b0b530bbfa6e2a9088a5b4a9dc0524b6d60989c846e2c74cd149f77"},
-    {file = "pygame_ce-2.5.7-pp311-pypy311_pp73-manylinux2014_i686.manylinux_2_17_i686.whl", hash = "sha256:01c48daf8fccb66e8750d5d26bf20e3f0dc484a5f7748fa98fd7e2ac69a2f7f5"},
-    {file = "pygame_ce-2.5.7-pp311-pypy311_pp73-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:8ac7120a6c39c042abdc6bd2f5491f7121936c68c425235b52dc451ed9583dbf"},
-    {file = "pygame_ce-2.5.7-pp311-pypy311_pp73-win_amd64.whl", hash = "sha256:d79c4f961ffa89183380c4284914ed2f693591baec7fb92e42f05857dd8664bd"},
-    {file = "pygame_ce-2.5.7.tar.gz", hash = "sha256:86beb797cd73c141299a29b56f7df2b0543fbdc81d428022458329ff694aaa51"},
+    {file = "pygame_ce-2.5.8-cp310-cp310-macosx_10_11_universal2.whl", hash = "sha256:e43021583000ff05657517f1455b6183d69796a39781ef91f82b5b2b869d4156"},
+    {file = "pygame_ce-2.5.8-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:514f2c13e008af13cbc45ef93e897af1d192bec35f07f8894212926286e89ef0"},
+    {file = "pygame_ce-2.5.8-cp310-cp310-manylinux2014_i686.manylinux_2_17_i686.whl", hash = "sha256:49aca63362d075c6efbf0571380b759c7a87341ae474acd23d897f3307bb9506"},
+    {file = "pygame_ce-2.5.8-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:6de2f738e0a6130f70ae47cf8da8845b2f228014f2c71b37477f10fb1febec5a"},
+    {file = "pygame_ce-2.5.8-cp310-cp310-win32.whl", hash = "sha256:ceabf943fb485dbcdc497d504bf267463e1d8ec62973a637635a03be312eb215"},
+    {file = "pygame_ce-2.5.8-cp310-cp310-win_amd64.whl", hash = "sha256:15a408aa324c7d3f465a80595a0cf2525c74ef147479a7b37322dbc1d99b8edf"},
+    {file = "pygame_ce-2.5.8-cp311-cp311-macosx_10_11_universal2.whl", hash = "sha256:9e98223c8874177c8441923a8f60da76b1de9d7f2450602a4c7ef24c15e84f1a"},
+    {file = "pygame_ce-2.5.8-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:a7b2a54548926eaf535ac574cfa6528f96bd1e2f524a20fea514b2922dd68bcc"},
+    {file = "pygame_ce-2.5.8-cp311-cp311-manylinux2014_i686.manylinux_2_17_i686.whl", hash = "sha256:ff283d1bee65e208cf2f0da7f2f4e3d0993d1787938898de2872fbefab1f786b"},
+    {file = "pygame_ce-2.5.8-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:33e1b5a78cd6d25c2c8f00c09cdc0ba8000eec81b53dc7d8d7323d8319691d69"},
+    {file = "pygame_ce-2.5.8-cp311-cp311-win32.whl", hash = "sha256:b919b49b8a41564f7d0ad43f6dc97a66f29d3956fb592581f4abd62442644c9c"},
+    {file = "pygame_ce-2.5.8-cp311-cp311-win_amd64.whl", hash = "sha256:0f75f6cf17607e380687aa5551c46aa830c8037b2950c71e48be8891ddc737da"},
+    {file = "pygame_ce-2.5.8-cp311-cp311-win_arm64.whl", hash = "sha256:8e7931bd6b8ffc1474e7b3d5717e18bf8ff3eed95ab9042f1b9a0907e9ff6519"},
+    {file = "pygame_ce-2.5.8-cp312-cp312-macosx_10_13_universal2.whl", hash = "sha256:0ae2141c81595b4b13b780d325b9ea0016c6647f8b3a6004278b00765a96664d"},
+    {file = "pygame_ce-2.5.8-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:e401643af9455cb69f8cb77050c325f290314da0051e9ab82c5ccaf8017c314a"},
+    {file = "pygame_ce-2.5.8-cp312-cp312-manylinux2014_i686.manylinux_2_17_i686.whl", hash = "sha256:6d4839f127b1b66f1dfe7e0dca3d2233b6f3a63077690081d1996e24087c6055"},
+    {file = "pygame_ce-2.5.8-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:bf9c8b4376077efec6ae31443172ae98545f278d0e4426852e81c28ab1f5d7c2"},
+    {file = "pygame_ce-2.5.8-cp312-cp312-win32.whl", hash = "sha256:91d2434d8cbdb7cd04c9b37e76a8154641da25f4e274265806407f495fe6e889"},
+    {file = "pygame_ce-2.5.8-cp312-cp312-win_amd64.whl", hash = "sha256:2cfe8afe1e7955780f0bd4f01d65f1b4903f561407052081cfcec31e80957c3c"},
+    {file = "pygame_ce-2.5.8-cp312-cp312-win_arm64.whl", hash = "sha256:6c48a3ad5f7102e076055a3c817c12e932ee5c9b831080db2ea9754236b0490d"},
+    {file = "pygame_ce-2.5.8-cp313-cp313-macosx_10_13_universal2.whl", hash = "sha256:56441a9bb75c2461750dc0e6e4a46e3833b3cf6339bfbaf16f93ecac037510f3"},
+    {file = "pygame_ce-2.5.8-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:e3183bc0d808e739ca2400df45a5bfae10704ccbcacab0f04f9adc9027e86427"},
+    {file = "pygame_ce-2.5.8-cp313-cp313-manylinux2014_i686.manylinux_2_17_i686.whl", hash = "sha256:841aecccb498419367936bea0b1b0c6e9d635dc81c41ef26ec1769158f1ab871"},
+    {file = "pygame_ce-2.5.8-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:5bb966b610e161a8f6d908b4c62ef3a1f3e922bc7bed73bd70a3e15dc780b90e"},
+    {file = "pygame_ce-2.5.8-cp313-cp313-win32.whl", hash = "sha256:cab944d76af71e707803856b4db984ca90d9d6453e470e89771ed963c11ed912"},
+    {file = "pygame_ce-2.5.8-cp313-cp313-win_amd64.whl", hash = "sha256:f495b0eb7a5c54c59da58e964bc7f68073c3f43cf307729fd48309104a04c190"},
+    {file = "pygame_ce-2.5.8-cp313-cp313-win_arm64.whl", hash = "sha256:dea22b4d4c418bbd0bd9853ae797ecfa882436d2684ceb6063ba8b520adc8500"},
+    {file = "pygame_ce-2.5.8-cp314-cp314-macosx_10_15_universal2.whl", hash = "sha256:7ec4efa6b57a194f5ad51b92211cc74b485320df951b0cc870235b2b889b9b6d"},
+    {file = "pygame_ce-2.5.8-cp314-cp314-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:bb91d0bb0b5e2a4da61910d752769d4580cacffb4b7338cee57c932351c67e7b"},
+    {file = "pygame_ce-2.5.8-cp314-cp314-manylinux2014_i686.manylinux_2_17_i686.whl", hash = "sha256:68bd9c4ac42bb2549c034d56399404f16c87c56714db721ed975a759798a3d16"},
+    {file = "pygame_ce-2.5.8-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:0027bd2255cbb39789d9c7ff95a5f040f56d1cfeb09504497447c0ee06169a24"},
+    {file = "pygame_ce-2.5.8-cp314-cp314-win32.whl", hash = "sha256:c5285d444e4b789ef95522bbd2b90433163ad2b89e0ae4891236fde88a027fbd"},
+    {file = "pygame_ce-2.5.8-cp314-cp314-win_amd64.whl", hash = "sha256:b4c2e28c201240199356952e6bd0221969d2eb8a1a15c3454d77db209bad7891"},
+    {file = "pygame_ce-2.5.8-cp314-cp314-win_arm64.whl", hash = "sha256:b23034594412456504822d3088cf5f292f63bbe415eac29735340a59999e4116"},
+    {file = "pygame_ce-2.5.8-cp315-cp315-macosx_10_15_universal2.whl", hash = "sha256:0a4e0804d53bae8d9aa5192fc2259b40dd084b48ea273dd7dd6e1c12b73303c4"},
+    {file = "pygame_ce-2.5.8-cp315-cp315-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:d7f03d38b3693c014dd47d4e281620b6756669129e545af1cd608a9484582846"},
+    {file = "pygame_ce-2.5.8-cp315-cp315-manylinux2014_i686.manylinux_2_17_i686.whl", hash = "sha256:d084b79535f3529aa157edd9401f4f33e5082f318d287029291d6596bb225105"},
+    {file = "pygame_ce-2.5.8-cp315-cp315-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:d9cbf6e2648ae6d76aa8ece82187d240300cfd9f4c90860e1e466f78cf0ab14a"},
+    {file = "pygame_ce-2.5.8-cp315-cp315-win32.whl", hash = "sha256:312a01ff5439a0bd2e55b56683518454da4cbe4cad493d0580e9c49f6aacc2d8"},
+    {file = "pygame_ce-2.5.8-cp315-cp315-win_amd64.whl", hash = "sha256:5b789aa7e4239be025c9de8428c2c422f0811f0e3dd702b574d836fd9ae040eb"},
+    {file = "pygame_ce-2.5.8-cp315-cp315-win_arm64.whl", hash = "sha256:28c4fed3870e3edf72ea7ea359bb5f64c55db0fb9cb3bdb26b4b674b4b4bcff4"},
+    {file = "pygame_ce-2.5.8-pp311-pypy311_pp73-macosx_10_15_universal2.whl", hash = "sha256:0aa908c9fce4d508205e0b9cdc0f7338066da63322f6bcaa9a9c8aff9155a87e"},
+    {file = "pygame_ce-2.5.8-pp311-pypy311_pp73-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:894faf17699ea7f14eabd9161ef532c1d248e40f568dab9240fc68b4c1ea85dc"},
+    {file = "pygame_ce-2.5.8-pp311-pypy311_pp73-manylinux2014_i686.manylinux_2_17_i686.whl", hash = "sha256:0d0c4b2b38e1946ea7a7c625ea317e237573e8731e4a56055eb4361b3c2daa0f"},
+    {file = "pygame_ce-2.5.8-pp311-pypy311_pp73-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:9ea02f653f76d496870766e1fb8419b6a6aebd81d40265057672f1f6d63d3509"},
+    {file = "pygame_ce-2.5.8-pp311-pypy311_pp73-win_amd64.whl", hash = "sha256:f2f2f1c03dc8d4460779f9e55f959a7c7e523101b3530f60f3208e5ca65a6216"},
+    {file = "pygame_ce-2.5.8.tar.gz", hash = "sha256:3c8e69088ead310037972c391306ea58e74d7296b35d1890067749235fd554ba"},
 ]
 
 [[package]]
@@ -1059,24 +1067,24 @@ windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "pyinstaller"
-version = "6.21.0"
+version = "6.22.0"
 description = "PyInstaller bundles a Python application and all its dependencies into a single package."
 optional = false
 python-versions = "<3.16,>=3.8"
 groups = ["test"]
 files = [
-    {file = "pyinstaller-6.21.0-py3-none-macosx_10_13_universal2.whl", hash = "sha256:327d132389f37912609e01be62810cf96b5aa95b613903e4b8692e0d12fb0eda"},
-    {file = "pyinstaller-6.21.0-py3-none-manylinux2014_aarch64.whl", hash = "sha256:7071d4b094d5b40deeef5fa3d3b98a1b846087f7562b49209663d5f9281fe251"},
-    {file = "pyinstaller-6.21.0-py3-none-manylinux2014_i686.whl", hash = "sha256:6b6374d652107dd4a2eeece903ff82bb4045bb5e1006c5a158a6dcdbefe84bf2"},
-    {file = "pyinstaller-6.21.0-py3-none-manylinux2014_ppc64le.whl", hash = "sha256:4e3108b3f02384560da70e39b8bf22b0ad597d02bd68a40d76ea91c1cfa00cad"},
-    {file = "pyinstaller-6.21.0-py3-none-manylinux2014_s390x.whl", hash = "sha256:697532279f535ad572bda613db4f821540e235c7854ca6da4d3bf0373f4415ee"},
-    {file = "pyinstaller-6.21.0-py3-none-manylinux2014_x86_64.whl", hash = "sha256:605169523a6b5ace39f13dfbff21add9f2bc43df99c7daf9394fefb2c45e8b6f"},
-    {file = "pyinstaller-6.21.0-py3-none-musllinux_1_1_aarch64.whl", hash = "sha256:5fa56746c1e76f93634d018502301378a2d0c382553d37d8c3c34ff436c12dd1"},
-    {file = "pyinstaller-6.21.0-py3-none-musllinux_1_1_x86_64.whl", hash = "sha256:42395ec76df8e8120c36b13339d9db8cab83e316a12839ee303cc00fc941bb74"},
-    {file = "pyinstaller-6.21.0-py3-none-win32.whl", hash = "sha256:c6b28d30d8fd99ce162ff3aab5013ed44dbfb747566b1f01b9bed7964d7c14e9"},
-    {file = "pyinstaller-6.21.0-py3-none-win_amd64.whl", hash = "sha256:7fae06c494ce0ebfe6bd3055c0e409def884f63af2e3705d06bd431ad9237fc7"},
-    {file = "pyinstaller-6.21.0-py3-none-win_arm64.whl", hash = "sha256:f13c95c9c03fb567217135919f93815c305813126780b0ed6e0123cb8acaf025"},
-    {file = "pyinstaller-6.21.0.tar.gz", hash = "sha256:bb9fab705983e393a2d1cac77d6972513057ad800215fd861dc15ff5272e98fd"},
+    {file = "pyinstaller-6.22.0-py3-none-macosx_10_13_universal2.whl", hash = "sha256:d7c7c5b149f7f9b37585b37e2376f774038b6a5633ba34db0de2698f75391e13"},
+    {file = "pyinstaller-6.22.0-py3-none-manylinux2014_aarch64.whl", hash = "sha256:f92f78a9c463b884d57f90c7459c0cb263ccd26a499356bbfac7a5f41fd5b93f"},
+    {file = "pyinstaller-6.22.0-py3-none-manylinux2014_i686.whl", hash = "sha256:f6c750c8ae999cc5520ddbce4263ac3ece96db04ba359ef20acacd81bccc201b"},
+    {file = "pyinstaller-6.22.0-py3-none-manylinux2014_ppc64le.whl", hash = "sha256:0a20c37761851100f422ec261f513f46d8e57100ea22886b9ff7a6c346104bd8"},
+    {file = "pyinstaller-6.22.0-py3-none-manylinux2014_s390x.whl", hash = "sha256:e6859e80b9c7dccb8a1687c5ed4644a722b370c2aa13e8a9ca5ebf5f9bb842ce"},
+    {file = "pyinstaller-6.22.0-py3-none-manylinux2014_x86_64.whl", hash = "sha256:b07ac9fd1d661ae4d0af6752c3941e4e5576a16cfe7e2d6504a32d57e17d0acc"},
+    {file = "pyinstaller-6.22.0-py3-none-musllinux_1_1_aarch64.whl", hash = "sha256:7885de3c830356b0990b27fe164f2b008fb4a18560bac884cf33985f61469f44"},
+    {file = "pyinstaller-6.22.0-py3-none-musllinux_1_1_x86_64.whl", hash = "sha256:81dc305c16510c1f9ead6d115b66f381e3d3453ecb96653099c51aa3050420d1"},
+    {file = "pyinstaller-6.22.0-py3-none-win32.whl", hash = "sha256:6f527c1345d5010682587aebc2f0c1cc34a9b1f200424969c7bfda723cddc074"},
+    {file = "pyinstaller-6.22.0-py3-none-win_amd64.whl", hash = "sha256:6e5f3656de100954bf5db25536c43e097e46d482843a96d03a0852bf266e4853"},
+    {file = "pyinstaller-6.22.0-py3-none-win_arm64.whl", hash = "sha256:b1233da63926be213cdfbfbb314735bc7762136ed772b1082e1b0a2d7ed896b5"},
+    {file = "pyinstaller-6.22.0.tar.gz", hash = "sha256:8b0166fff4583b374bbe7fa044bf03ddc33cab0f792a665807d96048e63f060e"},
 ]
 
 [package.dependencies]
@@ -1460,14 +1468,14 @@ files = [
 
 [[package]]
 name = "tox"
-version = "4.58.0"
+version = "4.60.0"
 description = "tox is a generic virtualenv management and test command line tool"
 optional = false
 python-versions = ">=3.10"
 groups = ["test"]
 files = [
-    {file = "tox-4.58.0-py3-none-any.whl", hash = "sha256:dcae21f5f015f3a67658e35644cce0d1aa0dedcd06f3927f95d84e1717f6cea5"},
-    {file = "tox-4.58.0.tar.gz", hash = "sha256:ab0b126a04dd56bc18e6d216386db09335247f2289b54cf534deb5c4ae3a8d2e"},
+    {file = "tox-4.60.0-py3-none-any.whl", hash = "sha256:175abbc4cdef615d66874c0843be4f44c353c14aab6d89939bb22246f84122bd"},
+    {file = "tox-4.60.0.tar.gz", hash = "sha256:6f93bb580d35e00fc69cfec1116eecbe21155f747753ca5019374f7c69b2eac9"},
 ]
 
 [package.dependencies]
@@ -1481,7 +1489,7 @@ pyproject-api = ">=1.10"
 python-discovery = ">=1.4.4"
 tomli = {version = ">=2.4", markers = "python_version < \"3.11\""}
 tomli-w = ">=1.2"
-typing-extensions = {version = ">=4.15", markers = "python_version < \"3.11\""}
+typing-extensions = {version = ">=4.15", markers = "python_version < \"3.13\""}
 virtualenv = ">=21.1"
 
 [package.extras]
@@ -1517,7 +1525,6 @@ files = [
     {file = "typing_extensions-4.15.0-py3-none-any.whl", hash = "sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548"},
     {file = "typing_extensions-4.15.0.tar.gz", hash = "sha256:0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466"},
 ]
-markers = {test = "python_version == \"3.10\""}
 
 [[package]]
 name = "urllib3"
@@ -1598,4 +1605,4 @@ watchmedo = ["PyYAML (>=3.10)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.13"
-content-hash = "dd8cf0c2a226af7cfbf11984b8bb4fa63c72ab0ffcfe4a6d09bb893fcf720102"
+content-hash = "db020cf213723b54e0c5e7b9bb19e3cc7059391ab6d5b7464e3c84245b8c82fe"
